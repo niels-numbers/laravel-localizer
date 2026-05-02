@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-02
+
+First stable release. No code changes since v0.10.0 — this release
+marks the public API as stable and commits the project to semantic
+versioning going forward. The API surface (`Route::localize()`,
+`Route::translate()`, `SetLocale`, `RedirectLocale`, the `Localizer`
+facade, `localizer.php` config keys) is now stable; breaking changes
+will only happen in 2.x.
+
+`mcamara/laravel-localization` is marked abandoned in Composer with
+`niels-numbers/laravel-localizer` set as the replacement, courtesy of
+[@mcamara](https://github.com/mcamara) merging
+[mcamara/laravel-localization#955](https://github.com/mcamara/laravel-localization/pull/955).
+
 ## [0.10.0] - 2026-04-30
 
 ### Changed
@@ -38,6 +52,7 @@ Initial public release. Architecture is stable; API may still see adjustments ba
 - Inertia + SPA language switcher guide (experimental) at `docs/inertia-spa-language-switch.md`.
 - CI matrix: PHP 8.2–8.4 × Laravel 9–12 (Testbench 7–10).
 
-[Unreleased]: https://github.com/niels-numbers/laravel-localizer/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/niels-numbers/laravel-localizer/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/niels-numbers/laravel-localizer/compare/v0.10.0...v1.0.0
 [0.10.0]: https://github.com/niels-numbers/laravel-localizer/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/niels-numbers/laravel-localizer/releases/tag/v0.9.0

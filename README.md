@@ -5,6 +5,14 @@
 ![Laravel](https://img.shields.io/badge/Laravel-9%20%7C%2010%20%7C%2011%20%7C%2012-blue?logo=laravel&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+> **Official successor to [`mcamara/laravel-localization`](https://github.com/mcamara/laravel-localization).**
+> The original package is marked abandoned in Composer with this
+> package set as the replacement
+> ([mcamara/laravel-localization#955](https://github.com/mcamara/laravel-localization/pull/955)).
+> Migrating? See [docs/migrating-from-laravel-localization.md](docs/migrating-from-laravel-localization.md)
+> - it covers the swap step by step and lists the long-standing
+> issues this rewrite addresses.
+
 Detect a visitor's preferred language and serve the right localized URL.
 
 Laravel ships with [localization](https://laravel.com/docs/localization)
@@ -855,8 +863,11 @@ validates incoming locale candidates against the narrowed subset:
 ## Comparison to other packages
 
 - **[mcamara/laravel-localization](https://github.com/mcamara/laravel-localization) (deprecated)**
-  This package is the modern successor to *laravel-localization*, which
-  is no longer maintained. The original package was the first to tackle
+  This package is the official successor to *laravel-localization*,
+  which is no longer maintained — `mcamara/laravel-localization` is
+  marked abandoned in Composer with `niels-numbers/laravel-localizer`
+  set as the replacement
+  ([mcamara/laravel-localization#955](https://github.com/mcamara/laravel-localization/pull/955)). The original package was the first to tackle
   the routing problem; it generated routes dynamically at runtime,
   making it incompatible with `php artisan route:cache` and several
   Laravel packages. In contrast, this package registers **two static
@@ -864,7 +875,8 @@ validates incoming locale candidates against the narrowed subset:
   without), making it fully cache-safe and compatible with most modern
   Laravel packages. See
   [docs/migrating-from-laravel-localization.md](docs/migrating-from-laravel-localization.md)
-  for a step-by-step migration guide.
+  for a step-by-step migration guide and the full list of long-standing
+  issues this rewrite addresses.
 
 - **[codezero-be/laravel-localized-routes](https://github.com/codezero-be/laravel-localized-routes) (deprecated)**
   An alternative to *laravel-localization*, using a **route-per-locale**

@@ -3,9 +3,61 @@
 This guide walks through swapping `mcamara/laravel-localization` for
 `niels-numbers/laravel-localizer` on an existing app. The two packages
 solve the same problem - locale-prefixed routes plus auto-detection -
-but the wiring differs. The biggest payoff is that this package is
-fully compatible with `php artisan route:cache`, so any custom cache
-plumbing you wrote around the old package can go away.
+but the wiring differs.
+
+## Why migrate
+
+The original package was the first to tackle locale-aware routing in
+Laravel and powered multilingual apps for a decade. Several issues
+that piled up over time were not fixable as patches - they were
+consequences of generating routes dynamically per request. This rewrite
+addresses them at the architecture level:
+
+- **`php artisan route:cache` is now working.** For the original,
+  `route:cache` did not work - routes were generated dynamically per
+  request, so the cache either silently broke the app or shipped a
+  cache for one locale only. The original shipped its own
+  `route:trans:cache` command as a custom workaround, which itself
+  broke on Laravel 11
+  ([mcamara/laravel-localization#927](https://github.com/mcamara/laravel-localization/issues/927)).
+  This package registers two static routes per definition (one with a
+  `{locale}` placeholder, one without), so plain `route:cache` works
+  on every supported Laravel version.
+- **Higher compatibility with the wider Laravel ecosystem.** Because
+  routes are static instead of dynamically generated per request,
+  third-party packages that introspect or cache the route table -
+  Ziggy, Wayfinder, Telescope, route-list-driven tooling - see every
+  variant up front and don't get surprised. Many of the collisions
+  reported against the original package were downstream consequences
+  of the dynamic-routing model; switching to static routes removes
+  the root cause rather than patching the symptoms.
+- **`php artisan route:list` shows every variant.** In the original,
+  `route:list` only listed the routes registered for the current
+  process's locale - a misleading partial view that hid half your
+  app's URLs. Here, `with_locale.{name}` and `without_locale.{name}`
+  (and per-locale `translated_{locale}.{name}` for `Route::translate()`)
+  appear as separate rows in one table.
+- **No more locale leakage onto unlocalized routes.** The original's
+  recommended `'prefix' => LaravelLocalization::setLocale()` had a
+  side effect: hitting *any* route - even one in `urlsIgnored` -
+  would call `App::setLocale()`. That broke `/admin`, `/api/health`,
+  and anything else outside the localized group. Here, both `SetLocale`
+  and `RedirectLocale` only act on routes registered through
+  `Route::localize()` / `Route::translate()` (detected via the
+  `locale_type` action attribute the macros set); plain routes in the
+  same `web` group pass through with zero side effects.
+- **POST/PUT/DELETE redirects no longer lose form bodies.**
+  `RedirectLocale` skips non-safe methods to avoid the 302→GET
+  browser downgrade that silently dropped request bodies in the
+  original.
+- **Five middlewares collapsed into two.** `localize`,
+  `localizationRedirect`, `localeSessionRedirect`, `localeCookieRedirect`,
+  `localeViewPath` had subtle ordering rules and silently broke locale
+  persistence if you got them wrong. Here: `SetLocale` + `RedirectLocale`,
+  with persistence as config flags (`persist_locale.session` /
+  `persist_locale.cookie`).
+- **First-class adapters for Ziggy and Wayfinder.** The original had
+  no client-side story; Inertia setups had to roll their own.
 
 ## 1. Swap the package
 
@@ -18,13 +70,19 @@ The service provider auto-registers via package discovery.
 
 ## 2. Replace the middleware
 
-Drop the old package's middleware aliases:
+The old package shipped **five** middleware aliases that you composed
+per route group; this package collapses the same surface into **two**.
+Drop all of these:
 
-- `localeSessionRedirect` (`Mcamara\LaravelLocalization\Middleware\LocaleSessionRedirect`)
-- `localizationRedirect` (`Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRedirectFilter`)
-- `localeViewPath` (`Mcamara\LaravelLocalization\Middleware\LaravelLocalizationViewPath`) - see [What's not migrated](#whats-not-migrated) below
+| Old alias | Old class | Replaced by |
+|---|---|---|
+| `localize` | `LaravelLocalizationRoutes` | `SetLocale` (URL → locale resolution) |
+| `localizationRedirect` | `LaravelLocalizationRedirectFilter` | `RedirectLocale` (canonical redirect) |
+| `localeSessionRedirect` | `LocaleSessionRedirect` | `persist_locale.session` config + `SetLocale` |
+| `localeCookieRedirect` | `LocaleCookieRedirect` | `persist_locale.cookie` config + `SetLocale` |
+| `localeViewPath` | `LaravelLocalizationViewPath` | not built in - see [What's not migrated](#whats-not-migrated) |
 
-Add the new package's middleware to the `web` group:
+Add the new package's two middleware to the `web` group:
 
 ```php
 // Laravel 11+: bootstrap/app.php
@@ -40,13 +98,15 @@ For Laravel 9/10, register both classes in the `web` group in
 `app/Http/Kernel.php`.
 
 > **No more middleware-order footguns.** In the old package, session
-> persistence and the redirect filter were both middleware. Getting the
-> order wrong (or attaching one without the other) silently broke
-> locale persistence or caused redirect loops. Here, persistence is
-> configured (`persist_locale.session` / `persist_locale.cookie`) and
-> handled inside `SetLocale`. The only ordering constraint is that
-> `SetLocale` must run before `SubstituteBindings`, which the `web`
-> group already guarantees.
+> and cookie persistence were each their own middleware that you
+> chained on every localized group. Getting the order wrong - or
+> attaching `localizationRedirect` without `localeSessionRedirect`,
+> or vice versa - silently broke locale persistence or caused redirect
+> loops. Here, persistence is configured
+> (`persist_locale.session` / `persist_locale.cookie`) and handled
+> inside `SetLocale`. The only ordering constraint is that `SetLocale`
+> must run before `SubstituteBindings`, which the `web` group already
+> guarantees.
 
 ## 3. Rewrite route definitions
 
@@ -55,7 +115,7 @@ Replace the prefix + middleware wrapper with `Route::localize()`:
 ```php
 // Before
 Route::prefix(LaravelLocalization::setLocale())
-     ->middleware(['localeSessionRedirect', 'localizationRedirect'])
+     ->middleware(['localizationRedirect', 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath'])
      ->group(function () {
          Route::get('/about', AboutController::class)->name('about');
      });
@@ -94,8 +154,8 @@ as it is.
 ## 4. Replace URL helpers with named routes
 
 The supported path is **named routes + `route()`**. The URL generator
-picks the locale-aware variant automatically; you never pass the
-locale explicitly.
+picks the locale-aware variant automatically; you do not have to pass the
+locale explicitly. 
 
 ```php
 // Before
@@ -160,9 +220,9 @@ The old package generated routes dynamically per request, so plain
 cache for one locale only. The package shipped its own commands as a
 workaround:
 
-- `php artisan route:trans:cache` — used in place of `route:cache`
-- `php artisan route:trans:clear` — used in place of `route:clear`
-- `php artisan route:trans:list {locale}` — `route:list` per locale
+- `php artisan route:trans:cache` - used in place of `route:cache`
+- `php artisan route:trans:clear` - used in place of `route:clear`
+- `php artisan route:trans:list {locale}` - `route:list` per locale
 
 None of that is needed here. Use Laravel's built-in commands directly:
 
@@ -182,10 +242,22 @@ URL generator, which is unaffected by the route cache. Same for
 - Replace `route:trans:cache` / `route:trans:clear` calls in
   deployment scripts, `composer.json` scripts, CI pipelines and
   Forge/Envoyer recipes with the plain `route:cache` / `route:clear`.
+- Remove the `LoadsTranslatedCachedRoutes` trait from
+  `app/Providers/RouteServiceProvider.php`:
+
+  ```php
+  // Delete these two lines:
+  // https://github.com/mcamara/laravel-localization/blob/master/CACHING.md
+  use \Mcamara\LaravelLocalization\Traits\LoadsTranslatedCachedRoutes;
+  ```
+
+  The trait overrode `loadCachedRoutes()` to dispatch to a per-locale
+  cache file. With the new package, Laravel's default cache loader is
+  the right thing - no override needed.
 - `php artisan route:list` shows every variant in one table; both
   `with_locale.about` and `without_locale.about` (or the per-locale
   `translated_de.about` etc.) appear as separate rows. There is no
-  per-locale filter — pipe through `grep` if you need one.
+  per-locale filter - pipe through `grep` if you need one.
 
 ## 7. Update Ziggy / JS route helpers
 
