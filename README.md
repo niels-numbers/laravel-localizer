@@ -97,7 +97,7 @@ persisted in the session and a cookie for follow-up requests.
 ## Requirements
 
 - **PHP** 8.2 / 8.3 / 8.4
-- **Laravel** 9, 10, 11, or 12
+- **Laravel** 9, 10, 11, 12, or 13
 
 ## Installation
 
