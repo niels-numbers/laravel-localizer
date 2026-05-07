@@ -2,12 +2,7 @@
 
 namespace NielsNumbers\LaravelLocalizer;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\Session;
-use NielsNumbers\LaravelLocalizer\Contracts\DetectorInterface;
 use NielsNumbers\LaravelLocalizer\Services\UriTranslator;
 
 class Localizer
@@ -29,8 +24,7 @@ class Localizer
 
     public function __construct(
         protected UriTranslator $translator
-    ) {
-    }
+    ) {}
 
     public function supportedLocales(): array
     {
@@ -148,7 +142,6 @@ class Localizer
         $this->activeDefaultLocale = $locale;
     }
 
-
     public function hideDefaultLocale(): bool
     {
         return Config::get('localizer.hide_default_locale', true);
@@ -209,5 +202,47 @@ class Localizer
         }
 
         return $name;
+    }
+
+    /**
+     * Get the text direction for the current application locale.
+     *
+     * Determines whether the current locale should use a left-to-right (`ltr`)
+     * or right-to-left (`rtl`) text direction.
+     */
+    public function getCurrentLocaleDirection(): string
+    {
+        return $this->getLocaleDirection(app()->getLocale());
+    }
+
+    /**
+     * Get the text direction for the given locale.
+     *
+     * Supports both simple locale codes such as `ar` and compound locale
+     * identifiers such as `ar_EG` or `uz-Arab`.
+     *
+     * Right-to-left locales include Arabic-script languages such as Arabic,
+     * Persian, Urdu, Kurdish, and others.
+     */
+    public function getLocaleDirection(string $locale): string
+    {
+        $rtlLocales = [
+            'ug',
+            'ur',
+            'ar',
+            'uz-Arab',
+            'tg-Arab',
+            'sd',
+            'fa',
+            'pa-Arab',
+            'ps',
+            'ks',
+            'ku',
+            'he',
+        ];
+
+        return in_array(mb_substr($locale, 0, 2), $rtlLocales, true)
+            ? 'rtl'
+            : 'ltr';
     }
 }

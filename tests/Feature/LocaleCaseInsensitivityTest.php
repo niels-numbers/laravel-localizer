@@ -134,4 +134,30 @@ class LocaleCaseInsensitivityTest extends TestCase
         $this->get('/DE/probe')->assertOk()->assertSee('de');
         $this->assertSame('de', App::getLocale());
     }
+
+    public function test_get_locale_direction_returns_ltr_for_non_rtl_locale(): void
+    {
+        App::setLocale('de');
+
+        $localizer = app(Localizer::class);
+
+        $this->assertSame('ltr', $localizer->getCurrentLocaleDirection());
+    }
+
+    public function test_get_locale_direction_returns_rtl_for_rtl_locale(): void
+    {
+        App::setLocale('ar');
+
+        $localizer = app(Localizer::class);
+
+        $this->assertSame('rtl', $localizer->getCurrentLocaleDirection());
+    }
+
+    public function test_get_locale_direction_supports_compound_locales(): void
+    {
+        $localizer = app(Localizer::class);
+
+        $this->assertSame('rtl', $localizer->getLocaleDirection('ar_EG'));
+        $this->assertSame('ltr', $localizer->getLocaleDirection('en_US'));
+    }
 }
