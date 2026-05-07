@@ -56,8 +56,7 @@ middleware group pass through untouched. Both middlewares look for a
 ignored:
 
 ```php
-$middleware->web(append: [SetLocale::class, RedirectLocale::class]);
-
+// bootstrap/app.php - see Installation for the full middleware setup.
 // In routes/web.php:
 Route::localize(function () {
     Route::get('/about', AboutController::class)->name('about');
@@ -89,12 +88,58 @@ Read the active locale via `App::getLocale()` if you need it.
 
 If your routes use per-locale slugs (`/de/blog/{post:slug}` for the
 German slug, `/en/blog/{post:slug}` for the English one - see recipe
-below), `SetLocale` must run **before** Laravel's `SubstituteBindings`.
-Otherwise `resolveRouteBinding()` reads the fallback locale.
+below), middleware order matters. `SetLocale` has to sit between
+`StartSession` and Laravel's `SubstituteBindings`:
 
-The recommended setup (`web(append: [SetLocale, RedirectLocale])`)
-handles this automatically. If you register them elsewhere, verify
-order.
+```
+EncryptCookies → StartSession → ... → SetLocale → SubstituteBindings → controller
+```
+
+**Why before `SubstituteBindings`:** `SubstituteBindings` calls your
+model's `resolveRouteBinding($value)`, which typically reads
+`App::getLocale()` to look up the slug in the right language. If
+`SetLocale` hasn't run yet, the locale is still Laravel's fallback
+(e.g. `en`), so the lookup happens against the wrong language and
+returns `null` - resulting in a 404 even though the URL is valid.
+
+**Why after `StartSession`:** locale detectors (e.g. user, session)
+need a started session to read from.
+
+### The `web(append: ...)` pitfall
+
+In Laravel 11+, `web(append: [...])` adds middleware to the **end** of
+the web group - **after** `SubstituteBindings`. So the obvious
+registration is wrong for translated bindings:
+
+```php
+// ❌ SetLocale runs too late - SubstituteBindings has already resolved
+$middleware->web(append: [
+    \NielsNumbers\LaravelLocalizer\Middleware\SetLocale::class,
+    \NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale::class,
+]);
+```
+
+### The fix: remove `SubstituteBindings`, then re-append it last
+
+Remove `SubstituteBindings` from the web group, then append `SetLocale`,
+`RedirectLocale`, and `SubstituteBindings` in that order. This puts
+`SetLocale` after the session is started but before bindings are
+resolved:
+
+```php
+// bootstrap/app.php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->web(remove: [
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ]);
+    $middleware->web(append: [
+        \NielsNumbers\LaravelLocalizer\Middleware\SetLocale::class,
+        \NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale::class,
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ]);
+})
+```
+
 
 ## Route Model Binding with translated slugs
 

@@ -24,6 +24,7 @@ rewrite fixes at the design level:
   segments, query strings, encoding
   ([#928](https://github.com/mcamara/laravel-localization/issues/928),
   [#933](https://github.com/mcamara/laravel-localization/issues/933),
+  [#924](https://github.com/mcamara/laravel-localization/issues/924),
   [#885](https://github.com/mcamara/laravel-localization/issues/885)).
   Here each locale variant is a named static route, so switching is a
   name lookup against the router's already-extracted parameters - no
@@ -104,9 +105,13 @@ Add the new package's two middleware to the `web` group:
 ```php
 // Laravel 11+: bootstrap/app.php
 ->withMiddleware(function (Middleware $middleware) {
+    $middleware->web(remove: [
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ]);
     $middleware->web(append: [
         \NielsNumbers\LaravelLocalizer\Middleware\SetLocale::class,
         \NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale::class,
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
     ]);
 })
 ```

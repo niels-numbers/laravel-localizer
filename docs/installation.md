@@ -41,14 +41,42 @@ return [
 
 ```php
 ->withMiddleware(function (Middleware $middleware) {
+    $middleware->web(remove: [
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ]);
     $middleware->web(append: [
         \NielsNumbers\LaravelLocalizer\Middleware\SetLocale::class,
         \NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale::class,
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
     ]);
 })
 ```
 
-**Laravel 9 / 10**: add both to the `web` group in `app/Http/Kernel.php`.
+`SetLocale` has to run after `StartSession` (so session-based locale
+detection works) and before `SubstituteBindings` (so translated route
+bindings like `{post:slug}` resolve against the correct locale). See
+[Middleware order with translated route bindings](/caveats-and-recipes#middleware-order-with-translated-route-bindings)
+for the full explanation.
+
+::: tip Other middleware that depends on the locale
+For every middleware that requires the correct locale (e.g.
+`HandleInertiaRequests` if you share locale-aware props, or any custom
+middleware reading `App::getLocale()`), append it in the same call
+after `SetLocale`:
+
+```php
+$middleware->web(append: [
+    \NielsNumbers\LaravelLocalizer\Middleware\SetLocale::class,
+    \NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale::class,
+    \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    \App\Http\Middleware\HandleInertiaRequests::class,
+]);
+```
+:::
+
+**Laravel 9 / 10**: add both middlewares to the `web` group in
+`app/Http/Kernel.php`, and ensure `SetLocale` runs before
+`SubstituteBindings` (use the `$middlewarePriority` array).
 
 ::: tip Mixing localized and unlocalized routes is safe
 Both middlewares only act on routes registered through

@@ -54,10 +54,14 @@ narrowed subset and the tenant default:
 
 ```php
 ->withMiddleware(function (Middleware $middleware) {
+    $middleware->web(remove: [
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ]);
     $middleware->web(append: [
         \App\Http\Middleware\TenantLocales::class,
         \NielsNumbers\LaravelLocalizer\Middleware\SetLocale::class,
         \NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale::class,
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
     ]);
 })
 ```
