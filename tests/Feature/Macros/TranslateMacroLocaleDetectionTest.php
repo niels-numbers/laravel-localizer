@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Macros;
 
 use Illuminate\Support\Facades\App;
@@ -20,23 +22,8 @@ use Orchestra\Testbench\TestCase;
  * partial-mocks the Localizer facade, and these tests need the real service
  * (config-driven supportedLocales/hideDefaultLocale and the URI translator).
  */
-class TranslateMacroLocaleDetectionTest extends TestCase
+final class TranslateMacroLocaleDetectionTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de', 'fr']);
-        Config::set('localizer.hide_default_locale', true);
-        Config::set('localizer.persist_locale.session', false);
-        Config::set('localizer.persist_locale.cookie', false);
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -77,5 +64,20 @@ class TranslateMacroLocaleDetectionTest extends TestCase
             ->get('/team')
             ->assertOk()
             ->assertSeeText('en');
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de', 'fr']);
+        Config::set('localizer.hide_default_locale', true);
+        Config::set('localizer.persist_locale.session', false);
+        Config::set('localizer.persist_locale.cookie', false);
     }
 }

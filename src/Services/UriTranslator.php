@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Services;
 
 use Illuminate\Support\Facades\Lang;
@@ -12,7 +14,7 @@ use Illuminate\Support\Facades\Lang;
  * unintended hits when the same segment appeared in different contexts
  * (e.g. translating "about" everywhere, including `/blog/about/team`).
  */
-class UriTranslator
+final class UriTranslator
 {
     public function translate(string $uri, ?string $locale = null): string
     {

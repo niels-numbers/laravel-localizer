@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Integration\Livewire3;
 
 use Illuminate\Support\Facades\Config;
@@ -11,7 +13,7 @@ use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use Orchestra\Testbench\TestCase;
 
-class LocaleProbe extends Component
+final class LocaleProbe extends Component
 {
     public string $observed = '';
 
@@ -28,11 +30,11 @@ class LocaleProbe extends Component
     }
 }
 
-class LivewireLocaleTest extends TestCase
+final class LivewireLocaleTest extends TestCase
 {
     protected function setUp(): void
     {
-        if (! class_exists(\Livewire\Livewire::class)) {
+        if (! class_exists(Livewire::class)) {
             $this->markTestSkipped('livewire/livewire is not installed.');
         }
 
@@ -48,43 +50,6 @@ class LivewireLocaleTest extends TestCase
         \Illuminate\Support\Facades\Log::swap(new \Illuminate\Log\Logger(
             new \Monolog\Logger('null', [new \Monolog\Handler\NullHandler()])
         ));
-    }
-
-    protected function getPackageProviders($app)
-    {
-        return [
-            ServiceProvider::class,
-            \Livewire\LivewireServiceProvider::class,
-        ];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.key', 'base64:'.base64_encode(random_bytes(32)));
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de']);
-        Config::set('localizer.hide_default_locale', true);
-        Config::set('localizer.persist_locale.session', false);
-        Config::set('localizer.persist_locale.cookie', false);
-    }
-
-    protected function defineRoutes($router)
-    {
-        Livewire::component('locale-probe', LocaleProbe::class);
-
-        view()->addNamespace('test', __DIR__.'/views');
-
-        $router->middleware([SetLocale::class, RedirectLocale::class])->group(function () {
-            Route::localize(function () {
-                Route::get('/page', fn () => view('test::page'))->name('page');
-            });
-
-            // Plain unlocalized route inside the same middleware group. SetLocale
-            // sees no `locale_type` action attribute and skips it — used by the
-            // negative test below to demonstrate the caveat.
-            Route::get('/admin', fn () => view('test::page'))->name('admin');
-        });
     }
 
     public function test_initial_render_on_localized_page_embeds_locale_into_snapshot(): void
@@ -170,5 +135,42 @@ class LivewireLocaleTest extends TestCase
         $update->assertOk();
         $data = json_decode($update->json('components.0.snapshot'), true);
         $this->assertSame('en', $data['data']['observed']);
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [
+            ServiceProvider::class,
+            \Livewire\LivewireServiceProvider::class,
+        ];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.key', 'base64:'.base64_encode(random_bytes(32)));
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de']);
+        Config::set('localizer.hide_default_locale', true);
+        Config::set('localizer.persist_locale.session', false);
+        Config::set('localizer.persist_locale.cookie', false);
+    }
+
+    protected function defineRoutes($router)
+    {
+        Livewire::component('locale-probe', LocaleProbe::class);
+
+        view()->addNamespace('test', __DIR__.'/views');
+
+        $router->middleware([SetLocale::class, RedirectLocale::class])->group(function () {
+            Route::localize(function () {
+                Route::get('/page', fn () => view('test::page'))->name('page');
+            });
+
+            // Plain unlocalized route inside the same middleware group. SetLocale
+            // sees no `locale_type` action attribute and skips it — used by the
+            // negative test below to demonstrate the caveat.
+            Route::get('/admin', fn () => view('test::page'))->name('admin');
+        });
     }
 }

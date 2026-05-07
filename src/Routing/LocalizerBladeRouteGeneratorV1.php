@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Routing;
 
 use Tightenco\Ziggy\BladeRouteGenerator;
 use Tightenco\Ziggy\Output\MergeScript;
 use Tightenco\Ziggy\Output\Script;
 
-class LocalizerBladeRouteGeneratorV1 extends BladeRouteGenerator
+final class LocalizerBladeRouteGeneratorV1 extends BladeRouteGenerator
 {
     public function generate($group = null, $nonce = null)
     {
@@ -14,7 +16,7 @@ class LocalizerBladeRouteGeneratorV1 extends BladeRouteGenerator
 
         $nonce = $nonce ? ' nonce="'.$nonce.'"' : '';
 
-        if (static::$generated) {
+        if (self::$generated) {
             $output = config('ziggy.output.merge_script', MergeScript::class);
 
             return (string) new $output($ziggy, $nonce);
@@ -24,7 +26,7 @@ class LocalizerBladeRouteGeneratorV1 extends BladeRouteGenerator
             ? ''
             : file_get_contents(base_path('vendor/tightenco/ziggy/dist/index.js'));
 
-        static::$generated = true;
+        self::$generated = true;
 
         $output = config('ziggy.output.script', Script::class);
 

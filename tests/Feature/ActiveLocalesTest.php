@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Support\Facades\App;
@@ -18,24 +20,8 @@ use Orchestra\Testbench\TestCase;
  * in the current request — defaults to supported, can be narrowed via
  * `Localizer::setActiveLocales([...])` from a custom middleware.
  */
-class ActiveLocalesTest extends TestCase
+final class ActiveLocalesTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de', 'fr']);
-        Config::set('localizer.hide_default_locale', true);
-        Config::set('localizer.persist_locale.session', false);
-        Config::set('localizer.persist_locale.cookie', false);
-        Config::set('localizer.detectors', []);
-    }
-
     protected function tearDown(): void
     {
         // Localizer is a container singleton; the override survives the request.
@@ -85,7 +71,7 @@ class ActiveLocalesTest extends TestCase
     {
         // Tenant only allows en+de; user tries to reach /fr/about.
         Route::group(['middleware' => SetLocale::class, 'locale_type' => 'with_locale'], function () {
-            Route::get('/{locale}/about', fn() => App::getLocale())
+            Route::get('/{locale}/about', fn () => App::getLocale())
                 ->where('locale', 'en|de|fr')
                 ->name('about.locale');
         });
@@ -103,7 +89,7 @@ class ActiveLocalesTest extends TestCase
     public function test_set_locale_accepts_active_route_locale()
     {
         Route::group(['middleware' => SetLocale::class, 'locale_type' => 'with_locale'], function () {
-            Route::get('/{locale}/about', fn() => App::getLocale())
+            Route::get('/{locale}/about', fn () => App::getLocale())
                 ->where('locale', 'en|de|fr')
                 ->name('about.locale');
         });
@@ -125,7 +111,7 @@ class ActiveLocalesTest extends TestCase
         App::setLocale('en');
 
         Route::group(['middleware' => RedirectLocale::class, 'locale_type' => 'with_locale'],
-            fn() => Route::get('/fr/foo', fn() => 'reached'));
+            fn () => Route::get('/fr/foo', fn () => 'reached'));
 
         $response = $this->get('/fr/foo');
         $response->assertOk();
@@ -140,11 +126,27 @@ class ActiveLocalesTest extends TestCase
         App::setLocale('en');
 
         Route::group(['middleware' => RedirectLocale::class, 'locale_type' => 'with_locale'], function () {
-            Route::get('/{locale}/foo', fn() => 'foo');
-            Route::get('/foo', fn() => 'foo');
+            Route::get('/{locale}/foo', fn () => 'foo');
+            Route::get('/foo', fn () => 'foo');
         });
 
         $response = $this->get('/en/foo');
         $response->assertRedirect('/foo');
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de', 'fr']);
+        Config::set('localizer.hide_default_locale', true);
+        Config::set('localizer.persist_locale.session', false);
+        Config::set('localizer.persist_locale.cookie', false);
+        Config::set('localizer.detectors', []);
     }
 }

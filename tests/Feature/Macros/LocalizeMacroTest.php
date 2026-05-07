@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Macros;
 
 use Illuminate\Support\Facades\Config;
@@ -8,23 +10,8 @@ use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use Orchestra\Testbench\TestCase;
 
-class LocalizeMacroTest extends TestCase
+final class LocalizeMacroTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de', 'fr']);
-        Config::set('localizer.hide_default_locale', true);
-        Config::set('localizer.persist_locale.session', false);
-        Config::set('localizer.persist_locale.cookie', false);
-    }
-
     public function test_registers_the_macro()
     {
         Route::localize(function () {
@@ -118,5 +105,20 @@ class LocalizeMacroTest extends TestCase
         $with = Route::getRoutes()->getByName('with_locale.about');
 
         $this->assertSame('en|de|fr', $with->wheres['locale'] ?? null);
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de', 'fr']);
+        Config::set('localizer.hide_default_locale', true);
+        Config::set('localizer.persist_locale.session', false);
+        Config::set('localizer.persist_locale.cookie', false);
     }
 }

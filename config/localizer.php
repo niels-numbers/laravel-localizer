@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'supported_locales' => [], // ['de', 'en', .. ]
 
@@ -13,7 +15,7 @@ return [
     ],
 
     'detectors' => [
-        \NielsNumbers\LaravelLocalizer\Detectors\UserDetector::class,
-        \NielsNumbers\LaravelLocalizer\Detectors\BrowserDetector::class,
+        NielsNumbers\LaravelLocalizer\Detectors\UserDetector::class,
+        NielsNumbers\LaravelLocalizer\Detectors\BrowserDetector::class,
     ],
 ];

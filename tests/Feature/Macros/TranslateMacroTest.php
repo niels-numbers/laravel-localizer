@@ -1,21 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Macros;
 
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
-use Orchestra\Testbench\TestCase;
-use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use NielsNumbers\LaravelLocalizer\Facades\Localizer;
+use NielsNumbers\LaravelLocalizer\ServiceProvider;
+use Orchestra\Testbench\TestCase;
+use RuntimeException;
 
-class TranslateMacroTest extends TestCase
+final class TranslateMacroTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -29,7 +27,7 @@ class TranslateMacroTest extends TestCase
     public function test_registers_routes_for_each_locale()
     {
         Route::translate(function () {
-            Route::get('about', fn() => 'ok')->name('about');
+            Route::get('about', fn () => 'ok')->name('about');
         });
 
         $routes = collect(Route::getRoutes())->pluck('action.as');
@@ -43,7 +41,7 @@ class TranslateMacroTest extends TestCase
     {
         App::setLocale('fr');
 
-        Route::translate(fn() => null);
+        Route::translate(fn () => null);
 
         $this->assertEquals('fr', App::getLocale());
     }
@@ -54,10 +52,10 @@ class TranslateMacroTest extends TestCase
 
         try {
             Route::translate(function () {
-                throw new \RuntimeException('boom');
+                throw new RuntimeException('boom');
             });
             $this->fail('expected exception was not thrown');
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $this->assertSame('boom', $e->getMessage());
         }
 
@@ -69,7 +67,7 @@ class TranslateMacroTest extends TestCase
     {
         Route::translate(function () {
             Route::middleware('auth')->group(function () {
-                Route::get('about', fn() => 'ok')->name('about');
+                Route::get('about', fn () => 'ok')->name('about');
             });
         });
         Route::getRoutes()->refreshNameLookups();
@@ -86,12 +84,17 @@ class TranslateMacroTest extends TestCase
         // SetLocale recovers the locale from this attribute for translated
         // routes (no {locale} URL parameter to read).
         Route::translate(function () {
-            Route::get('about', fn() => 'ok')->name('about');
+            Route::get('about', fn () => 'ok')->name('about');
         });
         Route::getRoutes()->refreshNameLookups();
 
         $this->assertSame('en', Route::getRoutes()->getByName('translated_en.about')->getAction('locale'));
         $this->assertSame('de', Route::getRoutes()->getByName('translated_de.about')->getAction('locale'));
         $this->assertSame('en', Route::getRoutes()->getByName('without_locale.about')->getAction('locale'));
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
     }
 }

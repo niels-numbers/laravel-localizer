@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Middleware;
 
 use Closure;
@@ -9,7 +11,7 @@ use Illuminate\Support\Facades\Config;
 use NielsNumbers\LaravelLocalizer\Localizer;
 use Symfony\Component\HttpFoundation\Response;
 
-class RedirectLocale
+final class RedirectLocale
 {
     public function __construct(protected Localizer $localizer) {}
 
@@ -42,7 +44,7 @@ class RedirectLocale
         $default = $this->localizer->defaultLocale();
         $hideDefault = Config::get('localizer.hide_default_locale', true);
 
-        $path = ltrim($request->path(), '/');
+        $path = mb_ltrim($request->path(), '/');
         // We can't use $request->route('locale'): only LocalizeMacro routes
         // (/{locale}/about) declare it as a parameter. TranslateMacro routes
         // (/de/ueber), directly registered routes (Route::get('/de/foo')) and
@@ -61,7 +63,8 @@ class RedirectLocale
         // hits a registered route (LocalizeMacro constraints are lowercase)
         // and the URL stays consistent with everything else generated.
         if ($hasLocalePrefix && $prefix !== $rawPrefix) {
-            $newPath = ($hideDefault && $prefix === $default) ? $rest : $prefix . '/' . $rest;
+            $newPath = ($hideDefault && $prefix === $default) ? $rest : $prefix.'/'.$rest;
+
             return $this->redirectTo($request, $newPath);
         }
 
@@ -72,7 +75,7 @@ class RedirectLocale
 
         // No locale prefix + app is in a non-default language → add prefix
         if (! $hasLocalePrefix && $locale !== $default) {
-            return $this->redirectTo($request, $locale . '/' . $path);
+            return $this->redirectTo($request, $locale.'/'.$path);
         }
 
         return $next($request);
@@ -80,7 +83,7 @@ class RedirectLocale
 
     protected function redirectTo(Request $request, string $path): Response
     {
-        $url = url('/' . ltrim($path, '/'));
+        $url = url('/'.mb_ltrim($path, '/'));
         $query = $request->getQueryString();
 
         return redirect($query ? "{$url}?{$query}" : $url);

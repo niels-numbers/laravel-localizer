@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Facades;
 
 use Illuminate\Support\Facades\Facade;
@@ -22,7 +24,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string url(string $name, ?string $locale = null)
  * @method static ?string baseName(?string $name)
  */
-class Localizer extends Facade
+final class Localizer extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

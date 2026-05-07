@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Support\Facades\Config;
@@ -9,23 +11,8 @@ use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use Orchestra\Testbench\TestCase;
 
-class LifecycleTest extends TestCase
+final class LifecycleTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de']);
-        Config::set('localizer.hide_default_locale', true);
-        Config::set('localizer.persist_locale.session', false);
-        Config::set('localizer.persist_locale.cookie', false);
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -33,26 +20,6 @@ class LifecycleTest extends TestCase
         \Illuminate\Support\Facades\Log::swap(new \Illuminate\Log\Logger(
             new \Monolog\Logger('null', [new \Monolog\Handler\NullHandler()])
         ));
-    }
-
-    protected function defineRoutes($router)
-    {
-        $router->middleware([SetLocale::class, RedirectLocale::class])->group(function () {
-            Route::localize(function () {
-                Route::get('/about', fn () => route('about', [], false))->name('about');
-                Route::get('/contact', fn () => route('about', ['locale' => 'en'], false))->name('contact');
-                // Echoes the in-controller App locale. Used to verify that
-                // SetLocale set the locale correctly even for non-safe methods
-                // (which RedirectLocale skips to preserve the request body).
-                Route::post('/save', fn () => app()->getLocale())->name('save');
-            });
-
-            // Plain unlocalized route inside the same middleware group:
-            // both middlewares must skip it (no `locale_type` action).
-            // Reports the in-controller App locale so we can confirm
-            // SetLocale didn't touch it either.
-            Route::get('/admin', fn () => app()->getLocale())->name('admin');
-        });
     }
 
     public function test_localized_request_resolves_and_handler_generates_matching_url()
@@ -180,5 +147,40 @@ class LifecycleTest extends TestCase
         // RedirectLocale didn't try to rewrite the URL.
         $response->assertOk();
         $this->assertNull($response->headers->get('Location'));
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de']);
+        Config::set('localizer.hide_default_locale', true);
+        Config::set('localizer.persist_locale.session', false);
+        Config::set('localizer.persist_locale.cookie', false);
+    }
+
+    protected function defineRoutes($router)
+    {
+        $router->middleware([SetLocale::class, RedirectLocale::class])->group(function () {
+            Route::localize(function () {
+                Route::get('/about', fn () => route('about', [], false))->name('about');
+                Route::get('/contact', fn () => route('about', ['locale' => 'en'], false))->name('contact');
+                // Echoes the in-controller App locale. Used to verify that
+                // SetLocale set the locale correctly even for non-safe methods
+                // (which RedirectLocale skips to preserve the request body).
+                Route::post('/save', fn () => app()->getLocale())->name('save');
+            });
+
+            // Plain unlocalized route inside the same middleware group:
+            // both middlewares must skip it (no `locale_type` action).
+            // Reports the in-controller App locale so we can confirm
+            // SetLocale didn't touch it either.
+            Route::get('/admin', fn () => app()->getLocale())->name('admin');
+        });
     }
 }

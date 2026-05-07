@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Macros;
 
 use Closure;
@@ -9,7 +11,7 @@ use Illuminate\Support\Traits\Localizable;
 use NielsNumbers\LaravelLocalizer\Facades\Localizer;
 use NielsNumbers\LaravelLocalizer\Services\UriTranslator;
 
-class TranslateMacro
+final class TranslateMacro
 {
     use Localizable;
 

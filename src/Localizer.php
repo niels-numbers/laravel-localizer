@@ -1,16 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\Session;
-use NielsNumbers\LaravelLocalizer\Contracts\DetectorInterface;
 use NielsNumbers\LaravelLocalizer\Services\UriTranslator;
 
-class Localizer
+final class Localizer
 {
     /**
      * Runtime override for the active subset of supported locales.
@@ -29,8 +26,7 @@ class Localizer
 
     public function __construct(
         protected UriTranslator $translator
-    ) {
-    }
+    ) {}
 
     public function supportedLocales(): array
     {
@@ -148,7 +144,6 @@ class Localizer
         $this->activeDefaultLocale = $locale;
     }
 
-
     public function hideDefaultLocale(): bool
     {
         return Config::get('localizer.hide_default_locale', true);
@@ -195,17 +190,17 @@ class Localizer
 
         foreach (['with_locale.', 'without_locale.'] as $prefix) {
             if (str_starts_with($name, $prefix)) {
-                return substr($name, strlen($prefix));
+                return mb_substr($name, mb_strlen($prefix));
             }
         }
 
         if (str_starts_with($name, 'translated_')) {
-            $dot = strpos($name, '.');
+            $dot = mb_strpos($name, '.');
 
             // No dot after `translated_`: not a name our TranslateMacro would
             // produce (the macro always registers as `translated_{locale}.`).
             // Treat it as a foreign name and return unchanged.
-            return $dot === false ? $name : substr($name, $dot + 1);
+            return $dot === false ? $name : mb_substr($name, $dot + 1);
         }
 
         return $name;

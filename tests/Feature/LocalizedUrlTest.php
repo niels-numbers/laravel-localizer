@@ -1,31 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Route;
+use LogicException;
 use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use Orchestra\Testbench\TestCase;
 
-class LocalizedUrlTest extends TestCase
+final class LocalizedUrlTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de']);
-        Config::set('localizer.hide_default_locale', true);
-        Config::set('localizer.persist_locale.session', false);
-        Config::set('localizer.persist_locale.cookie', false);
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -101,7 +89,7 @@ class LocalizedUrlTest extends TestCase
         });
 
         $this->withoutExceptionHandling();
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage('unnamed translated route');
 
         $this->get('/about');
@@ -137,7 +125,7 @@ class LocalizedUrlTest extends TestCase
 
     public function test_throws_when_called_outside_request_context()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage('active matched route');
 
         Route::localizedUrl('de');
@@ -234,5 +222,20 @@ class LocalizedUrlTest extends TestCase
         // the en value is now in the session for the follow-up.
         $response->assertRedirect('/about');
         $this->assertSame('en', session('locale'));
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de']);
+        Config::set('localizer.hide_default_locale', true);
+        Config::set('localizer.persist_locale.session', false);
+        Config::set('localizer.persist_locale.cookie', false);
     }
 }

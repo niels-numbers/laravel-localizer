@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Support\Facades\Config;
@@ -9,23 +11,8 @@ use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use Orchestra\Testbench\TestCase;
 
-class RouteHelpersTest extends TestCase
+final class RouteHelpersTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de']);
-        Config::set('localizer.hide_default_locale', true);
-        Config::set('localizer.persist_locale.session', false);
-        Config::set('localizer.persist_locale.cookie', false);
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -206,5 +193,20 @@ class RouteHelpersTest extends TestCase
         $this->assertSame('about', $localizer->baseName('translated_de.about'));
         $this->assertSame('admin.dashboard', $localizer->baseName('admin.dashboard'));
         $this->assertNull($localizer->baseName(null));
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de']);
+        Config::set('localizer.hide_default_locale', true);
+        Config::set('localizer.persist_locale.session', false);
+        Config::set('localizer.persist_locale.cookie', false);
     }
 }

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Macros;
 
 use Closure;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 
-class LocalizeMacro
+final class LocalizeMacro
 {
     public function register(Closure $closure): void
     {

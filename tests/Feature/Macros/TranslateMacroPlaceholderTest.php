@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Macros;
 
 use Illuminate\Support\Facades\App;
@@ -19,41 +21,14 @@ use Orchestra\Testbench\TestCase;
  * URI to the correct route, and route() must build the matching URL for
  * each locale from the same name.
  */
-class TranslateMacroPlaceholderTest extends TestCase
+final class TranslateMacroPlaceholderTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de']);
-        Config::set('localizer.hide_default_locale', true);
-        Config::set('localizer.persist_locale.session', false);
-        Config::set('localizer.persist_locale.cookie', false);
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
 
         Lang::addLines(['routes.blog/post/{slug}' => 'blog/post/{slug}'], 'en');
         Lang::addLines(['routes.blog/post/{slug}' => 'blog/artikel/{slug}'], 'de');
-    }
-
-    private function defineTranslatedPostRoute(): void
-    {
-        Route::middleware(SetLocale::class)->group(function () {
-            Route::translate(function () {
-                Route::get(
-                    Localizer::url('blog/post/{slug}'),
-                    fn (string $slug) => App::getLocale().':'.$slug,
-                )->name('post');
-            });
-        });
     }
 
     public function test_registers_per_locale_uris_with_placeholder_preserved()
@@ -157,5 +132,32 @@ class TranslateMacroPlaceholderTest extends TestCase
         $this->get('/de/blog/post/hallo-welt')
             ->assertOk()
             ->assertSeeText('de:hallo-welt');
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de']);
+        Config::set('localizer.hide_default_locale', true);
+        Config::set('localizer.persist_locale.session', false);
+        Config::set('localizer.persist_locale.cookie', false);
+    }
+
+    private function defineTranslatedPostRoute(): void
+    {
+        Route::middleware(SetLocale::class)->group(function () {
+            Route::translate(function () {
+                Route::get(
+                    Localizer::url('blog/post/{slug}'),
+                    fn (string $slug) => App::getLocale().':'.$slug,
+                )->name('post');
+            });
+        });
     }
 }

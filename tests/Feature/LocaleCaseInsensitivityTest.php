@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Support\Facades\App;
@@ -16,24 +18,8 @@ use Orchestra\Testbench\TestCase;
  * in uppercase ('EN', 'DE'). The package normalizes these against
  * the canonical lowercase form configured in supported_locales.
  */
-class LocaleCaseInsensitivityTest extends TestCase
+final class LocaleCaseInsensitivityTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de', 'fr']);
-        Config::set('localizer.hide_default_locale', true);
-        Config::set('localizer.persist_locale.session', false);
-        Config::set('localizer.persist_locale.cookie', false);
-        Config::set('localizer.detectors', []);
-    }
-
     public function test_canonicalize_returns_canonical_form_for_uppercase()
     {
         $localizer = app(Localizer::class);
@@ -133,5 +119,21 @@ class LocaleCaseInsensitivityTest extends TestCase
         // miss the lang/de/* files in subsequent requests / mailables.
         $this->get('/DE/probe')->assertOk()->assertSee('de');
         $this->assertSame('de', App::getLocale());
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de', 'fr']);
+        Config::set('localizer.hide_default_locale', true);
+        Config::set('localizer.persist_locale.session', false);
+        Config::set('localizer.persist_locale.cookie', false);
+        Config::set('localizer.detectors', []);
     }
 }

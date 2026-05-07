@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Services;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Traits\Localizable;
 use LogicException;
@@ -26,7 +27,7 @@ use NielsNumbers\LaravelLocalizer\Localizer;
  *      named: throw — the original lang-key is unrecoverable from the URI.
  *   4. There's no current route (called outside an HTTP request): throw.
  */
-class CurrentRouteLocalizer
+final class CurrentRouteLocalizer
 {
     use Localizable;
 
@@ -110,7 +111,7 @@ class CurrentRouteLocalizer
 
     protected function swapUriPrefix(Request $request, string $newLocale, bool $absolute, bool $forcePrefix = false): string
     {
-        $path = ltrim($request->path(), '/');
+        $path = mb_ltrim($request->path(), '/');
         [$prefix, $rest] = array_pad(explode('/', $path, 2), 2, '');
 
         $bare = $this->localizer->isSupported($prefix) ? $rest : $path;
@@ -119,13 +120,13 @@ class CurrentRouteLocalizer
 
         $newPath = (! $forcePrefix && $hide && $newLocale === $default)
             ? $bare
-            : $newLocale . '/' . $bare;
+            : $newLocale.'/'.$bare;
 
-        $url = '/' . ltrim($newPath, '/');
+        $url = '/'.mb_ltrim($newPath, '/');
         $query = $request->getQueryString();
 
         if ($query) {
-            $url .= '?' . $query;
+            $url .= '?'.$query;
         }
 
         return $absolute ? url($url) : $url;

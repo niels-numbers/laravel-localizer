@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Middleware;
 
 use Closure;
@@ -12,7 +14,7 @@ use NielsNumbers\LaravelLocalizer\Contracts\DetectorInterface;
 use NielsNumbers\LaravelLocalizer\Localizer;
 use Symfony\Component\HttpFoundation\Response;
 
-class SetLocale
+final class SetLocale
 {
     public function __construct(protected Localizer $localizer) {}
 

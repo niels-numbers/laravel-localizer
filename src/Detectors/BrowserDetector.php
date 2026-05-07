@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Detectors;
 
 use CodeZero\BrowserLocale\BrowserLocale;
@@ -7,7 +9,7 @@ use CodeZero\BrowserLocale\Filters\CombinedFilter;
 use Illuminate\Http\Request;
 use NielsNumbers\LaravelLocalizer\Contracts\DetectorInterface;
 
-class BrowserDetector implements DetectorInterface
+final class BrowserDetector implements DetectorInterface
 {
     public function detect(Request $request): string|array|null
     {

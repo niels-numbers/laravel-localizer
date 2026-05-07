@@ -1,17 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Middleware;
 
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
-use Orchestra\Testbench\TestCase;
 use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
-use NielsNumbers\LaravelLocalizer\Localizer;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
+use Orchestra\Testbench\TestCase;
 
-class SetLocaleTest extends TestCase
+final class SetLocaleTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -21,40 +22,6 @@ class SetLocaleTest extends TestCase
         \Illuminate\Support\Facades\Log::swap(new \Illuminate\Log\Logger(
             new \Monolog\Logger('null', [new \Monolog\Handler\NullHandler()])
         ));
-    }
-
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de']);
-        Config::set('localizer.hide_default_locale', true);
-        Config::set('localizer.persist_locale.session', true);
-        Config::set('localizer.persist_locale.cookie', true);
-    }
-
-    protected function defineRoutes($router)
-    {
-        // SetLocale skips routes without a `locale_type` action attribute
-        // (see middleware). Tag these test routes so the middleware engages
-        // — production routes get this for free via Route::localize().
-        $router->group([
-            'middleware' => SetLocale::class,
-            'locale_type' => 'with_locale',
-        ], function () use ($router) {
-            // Closures take no positional args: SetLocale strips {locale} from
-            // the route parameter bag, so adding $locale here would now fail
-            // with ArgumentCountError. Tests assert App::getLocale() instead.
-            $router->get('/{locale}/about', fn() => response('about'))->name('about.locale');
-            $router->get('/about', fn() => response('about'))->name('about');
-            $router->get('/{locale}', fn() => response('start'))->name('start.locale');
-            $router->get('/', fn() => response('start'))->name('start');
-        });
     }
 
     public function test_sets_locale_from_route_parameter()
@@ -130,5 +97,39 @@ class SetLocaleTest extends TestCase
         $this->get('/de/items/germany')
             ->assertOk()
             ->assertExactJson(['country' => 'germany']);
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de']);
+        Config::set('localizer.hide_default_locale', true);
+        Config::set('localizer.persist_locale.session', true);
+        Config::set('localizer.persist_locale.cookie', true);
+    }
+
+    protected function defineRoutes($router)
+    {
+        // SetLocale skips routes without a `locale_type` action attribute
+        // (see middleware). Tag these test routes so the middleware engages
+        // — production routes get this for free via Route::localize().
+        $router->group([
+            'middleware' => SetLocale::class,
+            'locale_type' => 'with_locale',
+        ], function () use ($router) {
+            // Closures take no positional args: SetLocale strips {locale} from
+            // the route parameter bag, so adding $locale here would now fail
+            // with ArgumentCountError. Tests assert App::getLocale() instead.
+            $router->get('/{locale}/about', fn () => response('about'))->name('about.locale');
+            $router->get('/about', fn () => response('about'))->name('about');
+            $router->get('/{locale}', fn () => response('start'))->name('start.locale');
+            $router->get('/', fn () => response('start'))->name('start');
+        });
     }
 }

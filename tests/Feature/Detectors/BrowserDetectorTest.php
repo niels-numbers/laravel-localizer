@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Detectors;
 
 use Illuminate\Http\Request;
 use NielsNumbers\LaravelLocalizer\Detectors\BrowserDetector;
 use Orchestra\Testbench\TestCase;
 
-class BrowserDetectorTest extends TestCase
+final class BrowserDetectorTest extends TestCase
 {
     public function test_returns_null_when_no_accept_language_header_is_present()
     {

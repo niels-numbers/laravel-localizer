@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Services;
 
 use Illuminate\Support\Facades\Lang;
 use NielsNumbers\LaravelLocalizer\Services\UriTranslator;
 use Orchestra\Testbench\TestCase;
 
-class UriTranslatorTest extends TestCase
+final class UriTranslatorTest extends TestCase
 {
     protected UriTranslator $translator;
 

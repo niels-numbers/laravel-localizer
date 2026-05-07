@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -11,7 +14,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -31,69 +33,8 @@ use Orchestra\Testbench\TestCase;
  *   4. Mailable sent with ->locale() — Laravel's PendingMail::locale wraps
  *      the build/send in withLocale (laravel/framework#23178).
  */
-class QueuedLocaleTest extends TestCase
+final class QueuedLocaleTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [ServiceProvider::class];
-    }
-
-    protected function defineEnvironment($app)
-    {
-        Config::set('app.locale', 'en');
-        Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.supported_locales', ['en', 'de']);
-        Config::set('localizer.hide_default_locale', true);
-
-        Config::set('database.default', 'testbench');
-        Config::set('database.connections.testbench', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-        ]);
-
-        Config::set('queue.default', 'database');
-        Config::set('queue.connections.database', [
-            'driver' => 'database',
-            'connection' => 'testbench',
-            'table' => 'jobs',
-            'queue' => 'default',
-            'retry_after' => 90,
-        ]);
-
-        Config::set('cache.default', 'array');
-        Config::set('mail.default', 'array');
-    }
-
-    protected function defineDatabaseMigrations()
-    {
-        $this->loadLaravelMigrations();
-
-        // Testbench's `loadLaravelMigrations()` only runs the top-level
-        // migration directory; the `jobs` table migration lives in a
-        // `queue/` subfolder on testbench v9+ and is missing entirely on
-        // testbench v7/v8 (Laravel 9/10). Create it explicitly to keep
-        // queue tests cross-version.
-        if (! Schema::hasTable('jobs')) {
-            Schema::create('jobs', function (Blueprint $table) {
-                $table->bigIncrements('id');
-                $table->string('queue')->index();
-                $table->longText('payload');
-                $table->unsignedTinyInteger('attempts');
-                $table->unsignedInteger('reserved_at')->nullable();
-                $table->unsignedInteger('available_at');
-                $table->unsignedInteger('created_at');
-            });
-        }
-    }
-
-    protected function defineRoutes($router)
-    {
-        Route::localize(function () {
-            Route::get('/about', fn () => 'ok')->name('about');
-        });
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -160,9 +101,70 @@ class QueuedLocaleTest extends TestCase
         $this->assertSame('/de/about', AboutLinkMail::$capturedUrl);
         $this->assertSame('en', app()->getLocale(), 'withLocale must restore the previous locale.');
     }
+
+    protected function getPackageProviders($app)
+    {
+        return [ServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app)
+    {
+        Config::set('app.locale', 'en');
+        Config::set('app.fallback_locale', 'en');
+        Config::set('localizer.supported_locales', ['en', 'de']);
+        Config::set('localizer.hide_default_locale', true);
+
+        Config::set('database.default', 'testbench');
+        Config::set('database.connections.testbench', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
+
+        Config::set('queue.default', 'database');
+        Config::set('queue.connections.database', [
+            'driver' => 'database',
+            'connection' => 'testbench',
+            'table' => 'jobs',
+            'queue' => 'default',
+            'retry_after' => 90,
+        ]);
+
+        Config::set('cache.default', 'array');
+        Config::set('mail.default', 'array');
+    }
+
+    protected function defineDatabaseMigrations()
+    {
+        $this->loadLaravelMigrations();
+
+        // Testbench's `loadLaravelMigrations()` only runs the top-level
+        // migration directory; the `jobs` table migration lives in a
+        // `queue/` subfolder on testbench v9+ and is missing entirely on
+        // testbench v7/v8 (Laravel 9/10). Create it explicitly to keep
+        // queue tests cross-version.
+        if (! Schema::hasTable('jobs')) {
+            Schema::create('jobs', function (Blueprint $table) {
+                $table->bigIncrements('id');
+                $table->string('queue')->index();
+                $table->longText('payload');
+                $table->unsignedTinyInteger('attempts');
+                $table->unsignedInteger('reserved_at')->nullable();
+                $table->unsignedInteger('available_at');
+                $table->unsignedInteger('created_at');
+            });
+        }
+    }
+
+    protected function defineRoutes($router)
+    {
+        Route::localize(function () {
+            Route::get('/about', fn () => 'ok')->name('about');
+        });
+    }
 }
 
-class WriteAboutUrlJob implements ShouldQueue
+final class WriteAboutUrlJob implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -175,7 +177,7 @@ class WriteAboutUrlJob implements ShouldQueue
     }
 }
 
-class WriteAboutUrlForLocaleJob implements ShouldQueue
+final class WriteAboutUrlForLocaleJob implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -193,7 +195,7 @@ class WriteAboutUrlForLocaleJob implements ShouldQueue
     }
 }
 
-class AboutLinkMail extends Mailable
+final class AboutLinkMail extends Mailable
 {
     public static ?string $capturedUrl = null;
 
