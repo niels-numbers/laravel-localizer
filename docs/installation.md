@@ -75,8 +75,8 @@ $middleware->web(append: [
 :::
 
 **Laravel 9 / 10**: add both middlewares to the `web` group in
-`app/Http/Kernel.php`, and ensure `SetLocale` runs before
-`SubstituteBindings` (use the `$middlewarePriority` array).
+`app/Http/Kernel.php`, after `StartSession` but before
+`SubstituteBindings`.
 
 ::: tip Mixing localized and unlocalized routes is safe
 Both middlewares only act on routes registered through
