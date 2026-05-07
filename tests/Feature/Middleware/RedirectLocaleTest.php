@@ -160,4 +160,26 @@ class RedirectLocaleTest extends TestCase
         $response = $this->get('/about?utm_source=newsletter');
         $response->assertRedirect('/de/about?utm_source=newsletter');
     }
+
+    public function test_redirects_default_locale_to_prefixed_when_hide_default_locale_is_off()
+    {
+        // With hide_default_locale: false, every URL must carry a locale
+        // segment - including the default. /about should redirect to /en/about.
+        App::setLocale('en');
+        Config::set('localizer.hide_default_locale', false);
+
+        $response = $this->get('/about');
+        $response->assertRedirect('/en/about');
+    }
+
+    public function test_keeps_prefixed_default_locale_when_hide_default_locale_is_off()
+    {
+        // The other side of the same coin: /en/about must NOT redirect to
+        // /about when hide_default_locale is off.
+        App::setLocale('en');
+        Config::set('localizer.hide_default_locale', false);
+
+        $response = $this->get('/en/about');
+        $response->assertOk();
+    }
 }

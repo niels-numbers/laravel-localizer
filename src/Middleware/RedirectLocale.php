@@ -70,8 +70,12 @@ class RedirectLocale
             return $this->redirectTo($request, $rest);
         }
 
-        // No locale prefix + app is in a non-default language → add prefix
-        if (! $hasLocalePrefix && $locale !== $default) {
+        // No locale prefix + URL needs one → add prefix.
+        // Two cases:
+        //   - active locale is non-default (URL must show /xx)
+        //   - hide_default_locale is off (default locale must also show in URL,
+        //     e.g. /about → /en/about so every URL has a locale segment)
+        if (! $hasLocalePrefix && ($locale !== $default || ! $hideDefault)) {
             return $this->redirectTo($request, $locale . '/' . $path);
         }
 
