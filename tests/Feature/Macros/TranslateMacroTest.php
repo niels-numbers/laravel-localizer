@@ -7,7 +7,6 @@ namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Macros;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
-use NielsNumbers\LaravelLocalizer\Facades\Localizer;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use Orchestra\Testbench\TestCase;
 use RuntimeException;
@@ -19,9 +18,8 @@ final class TranslateMacroTest extends TestCase
         parent::setUp();
 
         Config::set('app.fallback_locale', 'en');
-
-        Localizer::shouldReceive('supportedLocales')->andReturn(['en', 'de']);
-        Localizer::shouldReceive('hideDefaultLocale')->andReturn(true);
+        Config::set('localizer.supported_locales', ['en', 'de']);
+        Config::set('localizer.hide_default_locale', true);
     }
 
     public function test_registers_routes_for_each_locale()
