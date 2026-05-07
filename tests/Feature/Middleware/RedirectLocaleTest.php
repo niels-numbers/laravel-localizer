@@ -182,4 +182,45 @@ class RedirectLocaleTest extends TestCase
         $response = $this->get('/en/about');
         $response->assertOk();
     }
+
+    public function test_wrong_case_locale_prefix_redirects_to_canonical_with_localize_macro()
+    {
+        // Stale email links sometimes send users to /EN/about. The route
+        // constraint in LocalizeMacro is case-insensitive, so the route
+        // matches and this middleware redirects to the canonical lowercase
+        // form. Without the case-insensitive constraint, the route would
+        // not match and the request would 404.
+        App::setLocale('en');
+        Config::set('localizer.hide_default_locale', true);
+
+        Route::middleware([\NielsNumbers\LaravelLocalizer\Middleware\SetLocale::class, RedirectLocale::class])
+            ->group(function () {
+                Route::localize(function () {
+                    Route::get('/about', fn () => 'ok')->name('about');
+                });
+            });
+
+        // Default locale + hide_default_locale on → strip the prefix entirely.
+        $this->get('/EN/about')->assertRedirect('/about');
+
+        // Non-default locale → canonicalize the case but keep the prefix.
+        $this->get('/DE/about')->assertRedirect('/de/about');
+    }
+
+    public function test_wrong_case_locale_prefix_redirects_to_canonical_with_hide_default_off()
+    {
+        App::setLocale('en');
+        Config::set('localizer.hide_default_locale', false);
+
+        Route::middleware([\NielsNumbers\LaravelLocalizer\Middleware\SetLocale::class, RedirectLocale::class])
+            ->group(function () {
+                Route::localize(function () {
+                    Route::get('/about', fn () => 'ok')->name('about');
+                });
+            });
+
+        // Default locale + hide_default_locale off → keep the prefix, just
+        // canonicalize the case.
+        $this->get('/EN/about')->assertRedirect('/en/about');
+    }
 }

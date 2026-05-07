@@ -117,6 +117,8 @@ class LocalizeMacroTest extends TestCase
 
         $with = Route::getRoutes()->getByName('with_locale.about');
 
-        $this->assertSame('en|de|fr', $with->wheres['locale'] ?? null);
+        // (?i) makes the constraint case-insensitive, so /EN/about still
+        // matches the route and RedirectLocale can canonicalize the case.
+        $this->assertSame('(?i)en|de|fr', $with->wheres['locale'] ?? null);
     }
 }

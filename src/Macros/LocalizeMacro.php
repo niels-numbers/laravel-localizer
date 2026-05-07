@@ -23,9 +23,16 @@ class LocalizeMacro
         // wrong controller. Falls back to a never-matching pattern when
         // supported_locales is empty so the macro stays safe to call before
         // config is fully populated (e.g. early service-provider order).
+        //
+        // The (?i) inline modifier makes the match case-insensitive, so a
+        // wrong-case prefix like /EN/about (typical of stale email links)
+        // still matches the route and reaches RedirectLocale, which then
+        // redirects to the canonical lowercase form. Without (?i), the
+        // route doesn't match, the request 404s, and RedirectLocale never
+        // gets the chance to fix the URL.
         $supported = Config::get('localizer.supported_locales', []);
         $attributes['where'] = ['locale' => $supported
-            ? implode('|', array_map(fn ($l) => preg_quote($l, '/'), $supported))
+            ? '(?i)' . implode('|', array_map(fn ($l) => preg_quote($l, '/'), $supported))
             : '(?!)'];
 
         Route::group($attributes, $closure);

@@ -58,8 +58,8 @@ class RedirectLocale
 
         // Wrong-case prefix matched a supported locale (e.g. /EN/foo from a
         // legacy email link) — redirect to the canonical case so the request
-        // hits a registered route (LocalizeMacro constraints are lowercase)
-        // and the URL stays consistent with everything else generated.
+        // hits a registered route and the URL stays consistent with everything
+        // else generated.
         if ($hasLocalePrefix && $prefix !== $rawPrefix) {
             $newPath = ($hideDefault && $prefix === $default) ? $rest : $prefix . '/' . $rest;
             return $this->redirectTo($request, $newPath);
