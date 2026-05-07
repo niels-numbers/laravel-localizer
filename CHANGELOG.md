@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-05-08
+
+### Fixed
+
+- `RedirectLocale`: when `hide_default_locale` is `false`, requests to unprefixed URLs running on the default locale now redirect to the prefixed variant (`/about` -> `/en/about` when `en` is the default). Previously the middleware only added a prefix for non-default locales, implicitly assuming `hide_default_locale: true` - so apps that wanted the locale visible in every URL ended up with `/about` staying on `/about` while non-default locales did redirect, producing inconsistent URLs and no canonical form for the default locale.
+- `LocalizeMacro`: the `{locale}` route constraint is now case-insensitive (`(?i)en|de|...`), so a wrong-case prefix like `/EN/about` (typical of stale email links) still matches the registered route and reaches `RedirectLocale`, which then redirects to the canonical lowercase form. Previously the constraint was case-sensitive, so `/EN/about` did not match the route at all and 404'd before the redirect logic in `RedirectLocale` (added in 1.1.1) ever got a chance to run - making the wrong-case redirect effectively dead code in real-world usage with `Route::localize()`. **Note:** this only fixes wrong-case prefixes for `Route::localize()` routes. `Route::translate()` uses literal locale prefixes (`/de`, `/fr`) which Laravel's router still matches case-sensitively; wrong-case URLs to translated routes continue to 404.
+
+### Docs
+
+- New "Middleware order with translated route bindings" section in `docs/caveats-and-recipes.md` explaining why `SetLocale` has to run after `StartSession` and before `SubstituteBindings`, with the `remove`/`append` snippet to land it in the correct slot. Triggered by an issue report (#6) where the documented `web(append: [SetLocale, RedirectLocale])` registration left `SetLocale` running after `SubstituteBindings`, breaking translated route bindings (`{post:slug}` resolved against the fallback locale and 404'd).
+- Installation, multitenancy and migration-from-laravel-localization snippets all updated to the `remove`/`append` pattern so the package's recommended setup is correct out of the box.
+
 ## [1.2.0] - 2026-05-06
 
 ### Added
