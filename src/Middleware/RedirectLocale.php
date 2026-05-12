@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Middleware;
 
 use Closure;
@@ -61,7 +63,8 @@ class RedirectLocale
         // hits a registered route and the URL stays consistent with everything
         // else generated.
         if ($hasLocalePrefix && $prefix !== $rawPrefix) {
-            $newPath = ($hideDefault && $prefix === $default) ? $rest : $prefix . '/' . $rest;
+            $newPath = ($hideDefault && $prefix === $default) ? $rest : $prefix.'/'.$rest;
+
             return $this->redirectTo($request, $newPath);
         }
 
@@ -76,7 +79,7 @@ class RedirectLocale
         //   - hide_default_locale is off (default locale must also show in URL,
         //     e.g. /about → /en/about so every URL has a locale segment)
         if (! $hasLocalePrefix && ($locale !== $default || ! $hideDefault)) {
-            return $this->redirectTo($request, $locale . '/' . $path);
+            return $this->redirectTo($request, $locale.'/'.$path);
         }
 
         return $next($request);
@@ -84,7 +87,7 @@ class RedirectLocale
 
     protected function redirectTo(Request $request, string $path): Response
     {
-        $url = url('/' . ltrim($path, '/'));
+        $url = url('/'.ltrim($path, '/'));
         $query = $request->getQueryString();
 
         return redirect($query ? "{$url}?{$query}" : $url);

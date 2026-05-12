@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Detectors;
 
 use Illuminate\Http\Request;
@@ -13,7 +15,7 @@ class BrowserDetectorTest extends TestCase
         $request = Request::create('/');
         $request->headers->remove('Accept-Language');
 
-        $this->assertNull((new BrowserDetector())->detect($request));
+        $this->assertNull((new BrowserDetector)->detect($request));
     }
 
     public function test_returns_ordered_locale_candidates_from_accept_language()
@@ -22,7 +24,7 @@ class BrowserDetectorTest extends TestCase
             'HTTP_ACCEPT_LANGUAGE' => 'de-DE,de;q=0.9,en;q=0.8',
         ]);
 
-        $result = (new BrowserDetector())->detect($request);
+        $result = (new BrowserDetector)->detect($request);
 
         $this->assertIsArray($result);
         $this->assertSame(['de-DE', 'de', 'en'], $result);
@@ -34,7 +36,7 @@ class BrowserDetectorTest extends TestCase
             'HTTP_ACCEPT_LANGUAGE' => 'fr;q=0.5,en;q=0.9,de;q=0.8',
         ]);
 
-        $result = (new BrowserDetector())->detect($request);
+        $result = (new BrowserDetector)->detect($request);
 
         $this->assertSame(['en', 'de', 'fr'], $result);
     }

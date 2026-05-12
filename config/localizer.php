@@ -1,5 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
+use NielsNumbers\LaravelLocalizer\Detectors\BrowserDetector;
+use NielsNumbers\LaravelLocalizer\Detectors\UserDetector;
+
 return [
     'supported_locales' => [], // ['de', 'en', .. ]
 
@@ -13,7 +18,7 @@ return [
     ],
 
     'detectors' => [
-        \NielsNumbers\LaravelLocalizer\Detectors\UserDetector::class,
-        \NielsNumbers\LaravelLocalizer\Detectors\BrowserDetector::class,
+        UserDetector::class,
+        BrowserDetector::class,
     ],
 ];

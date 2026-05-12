@@ -1,10 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Monolog\Handler\NullHandler;
+use Monolog\Logger;
+use NielsNumbers\LaravelLocalizer\Facades\Localizer;
 use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use Orchestra\Testbench\TestCase;
@@ -30,8 +36,8 @@ class RouteHelpersTest extends TestCase
     {
         parent::setUp();
 
-        \Illuminate\Support\Facades\Log::swap(new \Illuminate\Log\Logger(
-            new \Monolog\Logger('null', [new \Monolog\Handler\NullHandler()])
+        Log::swap(new \Illuminate\Log\Logger(
+            new Logger('null', [new NullHandler])
         ));
     }
 
@@ -50,7 +56,7 @@ class RouteHelpersTest extends TestCase
         Lang::addLines(['routes.about' => 'about'], 'en');
 
         Route::translate(function () {
-            Route::get(\NielsNumbers\LaravelLocalizer\Facades\Localizer::url('about'), fn () => 'ok')
+            Route::get(Localizer::url('about'), fn () => 'ok')
                 ->name('about');
         });
 
@@ -90,7 +96,7 @@ class RouteHelpersTest extends TestCase
         Route::middleware(SetLocale::class)->group(function () {
             Route::translate(function () {
                 Route::get(
-                    \NielsNumbers\LaravelLocalizer\Facades\Localizer::url('about'),
+                    Localizer::url('about'),
                     fn () => Route::isLocalized() ? 'yes' : 'no'
                 )->name('about');
             });
@@ -149,7 +155,7 @@ class RouteHelpersTest extends TestCase
         Route::middleware(SetLocale::class)->group(function () {
             Route::translate(function () {
                 Route::get(
-                    \NielsNumbers\LaravelLocalizer\Facades\Localizer::url('about'),
+                    Localizer::url('about'),
                     fn () => Route::current()->baseName()
                 )->name('about');
             });
@@ -199,7 +205,7 @@ class RouteHelpersTest extends TestCase
 
     public function test_localizer_base_name_helper_strips_all_variants()
     {
-        $localizer = \NielsNumbers\LaravelLocalizer\Facades\Localizer::getFacadeRoot();
+        $localizer = Localizer::getFacadeRoot();
 
         $this->assertSame('about', $localizer->baseName('with_locale.about'));
         $this->assertSame('about', $localizer->baseName('without_locale.about'));

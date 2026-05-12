@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Macros;
 
 use Closure;
@@ -32,7 +34,7 @@ class LocalizeMacro
         // gets the chance to fix the URL.
         $supported = Config::get('localizer.supported_locales', []);
         $attributes['where'] = ['locale' => $supported
-            ? '(?i)' . implode('|', array_map(fn ($l) => preg_quote($l, '/'), $supported))
+            ? '(?i)'.implode('|', array_map(fn ($l) => preg_quote($l, '/'), $supported))
             : '(?!)'];
 
         Route::group($attributes, $closure);

@@ -1,10 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use LogicException;
+use Monolog\Handler\NullHandler;
+use Monolog\Logger;
+use NielsNumbers\LaravelLocalizer\Facades\Localizer;
+use NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale;
 use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use Orchestra\Testbench\TestCase;
@@ -30,8 +38,8 @@ class LocalizedUrlTest extends TestCase
     {
         parent::setUp();
 
-        \Illuminate\Support\Facades\Log::swap(new \Illuminate\Log\Logger(
-            new \Monolog\Logger('null', [new \Monolog\Handler\NullHandler()])
+        Log::swap(new \Illuminate\Log\Logger(
+            new Logger('null', [new NullHandler])
         ));
     }
 
@@ -75,7 +83,7 @@ class LocalizedUrlTest extends TestCase
 
         Route::middleware(SetLocale::class)->group(function () {
             Route::translate(function () {
-                Route::get(\NielsNumbers\LaravelLocalizer\Facades\Localizer::url('about'), function () {
+                Route::get(Localizer::url('about'), function () {
                     return Route::localizedUrl('de', false);
                 })->name('about');
             });
@@ -94,14 +102,14 @@ class LocalizedUrlTest extends TestCase
 
         Route::middleware(SetLocale::class)->group(function () {
             Route::translate(function () {
-                Route::get(\NielsNumbers\LaravelLocalizer\Facades\Localizer::url('about'), function () {
+                Route::get(Localizer::url('about'), function () {
                     return Route::localizedUrl('de', false);
                 });
             });
         });
 
         $this->withoutExceptionHandling();
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage('unnamed translated route');
 
         $this->get('/about');
@@ -137,7 +145,7 @@ class LocalizedUrlTest extends TestCase
 
     public function test_throws_when_called_outside_request_context()
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage('active matched route');
 
         Route::localizedUrl('de');
@@ -183,7 +191,7 @@ class LocalizedUrlTest extends TestCase
 
         Route::middleware(SetLocale::class)->group(function () {
             Route::translate(function () {
-                Route::get(\NielsNumbers\LaravelLocalizer\Facades\Localizer::url('about'), function () {
+                Route::get(Localizer::url('about'), function () {
                     return Route::localizedSwitcherUrl('en', false);
                 })->name('about');
             });
@@ -221,7 +229,7 @@ class LocalizedUrlTest extends TestCase
         // localizedSwitcherUrl exists to prevent.
         Config::set('localizer.persist_locale.session', true);
 
-        Route::middleware([SetLocale::class, \NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale::class])
+        Route::middleware([SetLocale::class, RedirectLocale::class])
             ->group(function () {
                 Route::localize(function () {
                     Route::get('/about', fn () => app()->getLocale())->name('about');

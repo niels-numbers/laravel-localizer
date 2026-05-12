@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Detectors;
 
 use CodeZero\BrowserLocale\BrowserLocale;
@@ -17,7 +19,7 @@ class BrowserDetector implements DetectorInterface
             return null;
         }
 
-        $locales = (new BrowserLocale($header))->filter(new CombinedFilter());
+        $locales = (new BrowserLocale($header))->filter(new CombinedFilter);
 
         return $locales ?: null;
     }

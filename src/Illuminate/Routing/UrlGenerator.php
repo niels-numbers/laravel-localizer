@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Illuminate\Routing;
 
 use Illuminate\Routing\UrlGenerator as BaseUrlGenerator;
@@ -66,7 +68,7 @@ class UrlGenerator extends BaseUrlGenerator
         // another language and we're building a switch-link to the default,
         // we MUST keep the /en/about prefix so SetLocale detects the switch
         // from the URL — RedirectLocale strips it on the follow-up request.
-        $withoutLocaleName = 'without_locale.' . $name;
+        $withoutLocaleName = 'without_locale.'.$name;
         if ($hideDefault
             && $appLocale === $defaultLocale
             && ($urlLocale === null || $urlLocale === $defaultLocale)
@@ -75,20 +77,23 @@ class UrlGenerator extends BaseUrlGenerator
             // a {locale} placeholder, so Laravel would otherwise append
             // ?locale=xx as a query string.
             unset($parameters['locale']);
+
             return [$withoutLocaleName, $parameters];
         }
 
-        $withLocaleName = 'with_locale.' . $name;
+        $withLocaleName = 'with_locale.'.$name;
         if (Route::has($withLocaleName)) {
             $parameters['locale'] = $locale;
+
             return [$withLocaleName, $parameters];
         }
 
-        $translatedName = "translated_{$locale}." . $name;
+        $translatedName = "translated_{$locale}.".$name;
         if (Route::has($translatedName)) {
             // Locale is part of the route URI, not a parameter — same
             // query-string reason as the hide_default branch above.
             unset($parameters['locale']);
+
             return [$translatedName, $parameters];
         }
 
@@ -98,7 +103,7 @@ class UrlGenerator extends BaseUrlGenerator
         // branch keeps the output consistent with the convention and
         // avoids an unnecessary RedirectLocale round-trip.
         return [
-            $hideDefault ? $withoutLocaleName : "translated_{$defaultLocale}." . $name,
+            $hideDefault ? $withoutLocaleName : "translated_{$defaultLocale}.".$name,
             $parameters,
         ];
     }
