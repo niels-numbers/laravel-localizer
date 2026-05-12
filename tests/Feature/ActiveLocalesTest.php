@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Support\Facades\App;
@@ -85,7 +87,7 @@ class ActiveLocalesTest extends TestCase
     {
         // Tenant only allows en+de; user tries to reach /fr/about.
         Route::group(['middleware' => SetLocale::class, 'locale_type' => 'with_locale'], function () {
-            Route::get('/{locale}/about', fn() => App::getLocale())
+            Route::get('/{locale}/about', fn () => App::getLocale())
                 ->where('locale', 'en|de|fr')
                 ->name('about.locale');
         });
@@ -103,7 +105,7 @@ class ActiveLocalesTest extends TestCase
     public function test_set_locale_accepts_active_route_locale()
     {
         Route::group(['middleware' => SetLocale::class, 'locale_type' => 'with_locale'], function () {
-            Route::get('/{locale}/about', fn() => App::getLocale())
+            Route::get('/{locale}/about', fn () => App::getLocale())
                 ->where('locale', 'en|de|fr')
                 ->name('about.locale');
         });
@@ -125,7 +127,7 @@ class ActiveLocalesTest extends TestCase
         App::setLocale('en');
 
         Route::group(['middleware' => RedirectLocale::class, 'locale_type' => 'with_locale'],
-            fn() => Route::get('/fr/foo', fn() => 'reached'));
+            fn () => Route::get('/fr/foo', fn () => 'reached'));
 
         $response = $this->get('/fr/foo');
         $response->assertOk();
@@ -140,8 +142,8 @@ class ActiveLocalesTest extends TestCase
         App::setLocale('en');
 
         Route::group(['middleware' => RedirectLocale::class, 'locale_type' => 'with_locale'], function () {
-            Route::get('/{locale}/foo', fn() => 'foo');
-            Route::get('/foo', fn() => 'foo');
+            Route::get('/{locale}/foo', fn () => 'foo');
+            Route::get('/foo', fn () => 'foo');
         });
 
         $response = $this->get('/en/foo');

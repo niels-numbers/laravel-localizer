@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Routing\Concerns;
 
 use Illuminate\Support\Facades\App;
@@ -9,7 +11,7 @@ trait RewritesRoutesForLocale
 {
     protected function rewriteForCurrentLocale(array $routes): array
     {
-        $appLocale     = App::getLocale();
+        $appLocale = App::getLocale();
         $defaultLocale = Localizer::defaultLocale();
         $useUnprefixed = Localizer::hideDefaultLocale()
                       && $appLocale === $defaultLocale;
@@ -23,6 +25,7 @@ trait RewritesRoutesForLocale
                     continue;
                 }
                 $rewritten[substr($name, 12)] = $def;
+
                 continue;
             }
             if (str_starts_with($name, 'without_locale.')) {
@@ -30,10 +33,12 @@ trait RewritesRoutesForLocale
                     continue;
                 }
                 $rewritten[substr($name, 15)] = $def;
+
                 continue;
             }
             if (str_starts_with($name, $translatedPrefix)) {
                 $rewritten[substr($name, strlen($translatedPrefix))] = $def;
+
                 continue;
             }
             if (str_starts_with($name, 'translated_')) {

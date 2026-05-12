@@ -1,11 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Integration\Livewire4;
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
 use Livewire\Livewire;
+use Livewire\LivewireServiceProvider;
+use Livewire\Mechanisms\HandleRequests\EndpointResolver;
+use Monolog\Handler\NullHandler;
+use Monolog\Logger;
 use NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale;
 use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
@@ -32,21 +39,21 @@ class LivewireLocaleTest extends TestCase
 {
     protected function setUp(): void
     {
-        if (! class_exists(\Livewire\Livewire::class)) {
+        if (! class_exists(Livewire::class)) {
             $this->markTestSkipped('livewire/livewire is not installed.');
         }
 
         // Livewire 4 randomizes the update endpoint to /livewire-{hash}/update.
         // The test reads the URI from the rendered HTML, so the runtime
         // version still has to be 4.x for this suite to be meaningful.
-        if (! class_exists(\Livewire\Mechanisms\HandleRequests\EndpointResolver::class)) {
+        if (! class_exists(EndpointResolver::class)) {
             $this->markTestSkipped('livewire/livewire 4.x is not installed.');
         }
 
         parent::setUp();
 
-        \Illuminate\Support\Facades\Log::swap(new \Illuminate\Log\Logger(
-            new \Monolog\Logger('null', [new \Monolog\Handler\NullHandler()])
+        Log::swap(new \Illuminate\Log\Logger(
+            new Logger('null', [new NullHandler])
         ));
     }
 
@@ -54,7 +61,7 @@ class LivewireLocaleTest extends TestCase
     {
         return [
             ServiceProvider::class,
-            \Livewire\LivewireServiceProvider::class,
+            LivewireServiceProvider::class,
         ];
     }
 

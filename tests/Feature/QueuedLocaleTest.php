@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -11,7 +14,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -142,7 +144,7 @@ class QueuedLocaleTest extends TestCase
         // already set the recipient's locale.
         app()->setLocale('de');
 
-        Mail::to('test@example.com')->send(new AboutLinkMail());
+        Mail::to('test@example.com')->send(new AboutLinkMail);
 
         $this->assertSame('/de/about', AboutLinkMail::$capturedUrl);
     }
@@ -155,7 +157,7 @@ class QueuedLocaleTest extends TestCase
         // the global locale was different beforehand.
         app()->setLocale('en');
 
-        Mail::to('test@example.com')->locale('de')->send(new AboutLinkMail());
+        Mail::to('test@example.com')->locale('de')->send(new AboutLinkMail);
 
         $this->assertSame('/de/about', AboutLinkMail::$capturedUrl);
         $this->assertSame('en', app()->getLocale(), 'withLocale must restore the previous locale.');

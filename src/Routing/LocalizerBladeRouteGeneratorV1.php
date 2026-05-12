@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Routing;
 
 use Tightenco\Ziggy\BladeRouteGenerator;

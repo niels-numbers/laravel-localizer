@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer;
 
+use Closure;
 use Illuminate\Contracts\Routing\UrlGenerator as UrlGeneratorContract;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use NielsNumbers\LaravelLocalizer\Facades\Localizer as LocalizerFacade;
 use NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator;
 use NielsNumbers\LaravelLocalizer\Macros\LocalizeMacro;
@@ -25,12 +29,11 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function register(): void
     {
-        $this->app->singleton(Localizer::class, fn() => new Localizer(new UriTranslator()));
-        $this->mergeConfigFrom(__DIR__ . '/../config/localizer.php', 'localizer');
+        $this->app->singleton(Localizer::class, fn () => new Localizer(new UriTranslator));
+        $this->mergeConfigFrom(__DIR__.'/../config/localizer.php', 'localizer');
 
         $this->registerUrlGenerator();
     }
-
 
     protected function registerUrlGenerator()
     {
@@ -85,11 +88,11 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
     {
         $macroRegisterName = LocalizerFacade::macroRegisterName();
 
-        Route::macro($macroRegisterName, function (\Closure $closure) {
+        Route::macro($macroRegisterName, function (Closure $closure) {
             App::make(LocalizeMacro::class)->register($closure);
         });
 
-        Route::macro('translate', function (\Closure $closure) {
+        Route::macro('translate', function (Closure $closure) {
             app(TranslateMacro::class)->register($closure);
         });
 
@@ -151,7 +154,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
             $name = $current->getName() ?? '';
 
-            return \Illuminate\Support\Str::startsWith(
+            return Str::startsWith(
                 $name,
                 ['with_locale.', 'without_locale.', 'translated_']
             );

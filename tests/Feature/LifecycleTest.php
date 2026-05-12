@@ -1,9 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature;
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Monolog\Handler\NullHandler;
+use Monolog\Logger;
 use NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale;
 use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
@@ -30,8 +35,8 @@ class LifecycleTest extends TestCase
     {
         parent::setUp();
 
-        \Illuminate\Support\Facades\Log::swap(new \Illuminate\Log\Logger(
-            new \Monolog\Logger('null', [new \Monolog\Handler\NullHandler()])
+        Log::swap(new \Illuminate\Log\Logger(
+            new Logger('null', [new NullHandler])
         ));
     }
 

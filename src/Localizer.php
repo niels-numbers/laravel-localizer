@@ -1,13 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\Session;
-use NielsNumbers\LaravelLocalizer\Contracts\DetectorInterface;
 use NielsNumbers\LaravelLocalizer\Services\UriTranslator;
 
 class Localizer
@@ -29,8 +28,7 @@ class Localizer
 
     public function __construct(
         protected UriTranslator $translator
-    ) {
-    }
+    ) {}
 
     public function supportedLocales(): array
     {
@@ -147,7 +145,6 @@ class Localizer
     {
         $this->activeDefaultLocale = $locale;
     }
-
 
     public function hideDefaultLocale(): bool
     {

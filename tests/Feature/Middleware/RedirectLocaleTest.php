@@ -1,13 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Middleware;
 
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Monolog\Handler\NullHandler;
+use Monolog\Logger;
 use NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale;
-use Orchestra\Testbench\TestCase;
+use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
+use Orchestra\Testbench\TestCase;
 
 class RedirectLocaleTest extends TestCase
 {
@@ -29,13 +35,13 @@ class RedirectLocaleTest extends TestCase
             'middleware' => RedirectLocale::class,
             'locale_type' => 'with_locale',
         ], function () {
-            Route::get('/{locale}/about', fn() => 'ok');
-            Route::get('/about', fn() => 'ok');
+            Route::get('/{locale}/about', fn () => 'ok');
+            Route::get('/about', fn () => 'ok');
         });
 
         // Logs create permission conflicts in docker
-        \Illuminate\Support\Facades\Log::swap(new \Illuminate\Log\Logger(
-            new \Monolog\Logger('null', [new \Monolog\Handler\NullHandler()])
+        Log::swap(new \Illuminate\Log\Logger(
+            new Logger('null', [new NullHandler])
         ));
     }
 
@@ -78,7 +84,7 @@ class RedirectLocaleTest extends TestCase
         Config::set('localizer.hide_default_locale', true);
 
         Route::group(['middleware' => RedirectLocale::class, 'locale_type' => 'with_locale'],
-            fn() => Route::get('/xx/about', fn() => 'ok'));
+            fn () => Route::get('/xx/about', fn () => 'ok'));
 
         $response = $this->get('/xx/about');
         $response->assertOk();
@@ -112,8 +118,8 @@ class RedirectLocaleTest extends TestCase
         Config::set('localizer.hide_default_locale', true);
 
         Route::group(['middleware' => RedirectLocale::class, 'locale_type' => 'with_locale'], function () {
-            Route::post('/{locale}/about', fn() => 'ok');
-            Route::post('/about', fn() => 'ok');
+            Route::post('/{locale}/about', fn () => 'ok');
+            Route::post('/about', fn () => 'ok');
         });
 
         $response = $this->post('/en/about');
@@ -127,8 +133,8 @@ class RedirectLocaleTest extends TestCase
         Config::set('localizer.hide_default_locale', true);
 
         Route::group(['middleware' => RedirectLocale::class, 'locale_type' => 'with_locale'], function () {
-            Route::post('/{locale}/save', fn() => 'ok');
-            Route::post('/save', fn() => 'ok');
+            Route::post('/{locale}/save', fn () => 'ok');
+            Route::post('/save', fn () => 'ok');
         });
 
         $response = $this->post('/save');
@@ -142,9 +148,9 @@ class RedirectLocaleTest extends TestCase
         Config::set('localizer.hide_default_locale', true);
 
         Route::group(['middleware' => RedirectLocale::class, 'locale_type' => 'with_locale'], function () {
-            Route::put('/{locale}/r', fn() => 'put');
-            Route::patch('/{locale}/r', fn() => 'patch');
-            Route::delete('/{locale}/r', fn() => 'delete');
+            Route::put('/{locale}/r', fn () => 'put');
+            Route::patch('/{locale}/r', fn () => 'patch');
+            Route::delete('/{locale}/r', fn () => 'delete');
         });
 
         $this->put('/en/r')->assertOk();
@@ -193,7 +199,7 @@ class RedirectLocaleTest extends TestCase
         App::setLocale('en');
         Config::set('localizer.hide_default_locale', true);
 
-        Route::middleware([\NielsNumbers\LaravelLocalizer\Middleware\SetLocale::class, RedirectLocale::class])
+        Route::middleware([SetLocale::class, RedirectLocale::class])
             ->group(function () {
                 Route::localize(function () {
                     Route::get('/about', fn () => 'ok')->name('about');
@@ -212,7 +218,7 @@ class RedirectLocaleTest extends TestCase
         App::setLocale('en');
         Config::set('localizer.hide_default_locale', false);
 
-        Route::middleware([\NielsNumbers\LaravelLocalizer\Middleware\SetLocale::class, RedirectLocale::class])
+        Route::middleware([SetLocale::class, RedirectLocale::class])
             ->group(function () {
                 Route::localize(function () {
                     Route::get('/about', fn () => 'ok')->name('about');

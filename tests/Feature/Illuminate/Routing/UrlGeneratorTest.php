@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Illuminate\Routing;
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\App;
-use Orchestra\Testbench\TestCase;
-use NielsNumbers\LaravelLocalizer\ServiceProvider;
-use NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator as CustomUrlGenerator;
 use Illuminate\Contracts\Routing\UrlGenerator as UrlGeneratorContract;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Route;
+use NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator;
+use NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator as CustomUrlGenerator;
+use NielsNumbers\LaravelLocalizer\ServiceProvider;
+use Orchestra\Testbench\TestCase;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 class UrlGeneratorTest extends TestCase
@@ -29,7 +32,7 @@ class UrlGeneratorTest extends TestCase
     {
         // Route::get('/test', fn () => 'ok')->name('test');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
 
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
@@ -44,7 +47,7 @@ class UrlGeneratorTest extends TestCase
     {
         Route::get('/test', fn () => 'ok')->name('test');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
 
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
@@ -55,13 +58,12 @@ class UrlGeneratorTest extends TestCase
         $this->assertEquals('/test', $route);
     }
 
-
     public function test_works_for_route_with_locale()
     {
         Route::get('/{locale}/about', fn () => 'ok')->name('with_locale.about');
         Route::get('/about', fn () => 'ok')->name('without_locale.about');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
 
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
@@ -85,7 +87,7 @@ class UrlGeneratorTest extends TestCase
         Route::get('/{locale}/about', fn () => 'ok')->name('with_locale.about');
         Route::get('/about', fn () => 'ok')->name('without_locale.about');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
 
@@ -108,7 +110,7 @@ class UrlGeneratorTest extends TestCase
         Route::get('/{locale}/about', fn () => 'ok')->name('with_locale.about');
         Route::get('/about', fn () => 'ok')->name('without_locale.about');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
 
@@ -128,7 +130,7 @@ class UrlGeneratorTest extends TestCase
         Route::get('/{locale}/about', fn () => 'ok')->name('with_locale.about');
         Route::get('/about', fn () => 'ok')->name('without_locale.about');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
 
@@ -149,7 +151,7 @@ class UrlGeneratorTest extends TestCase
         Route::get('/{locale}/about', fn () => 'ok')->name('with_locale.about');
         Route::get('/about', fn () => 'ok')->name('without_locale.about');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
 
@@ -157,7 +159,6 @@ class UrlGeneratorTest extends TestCase
 
         $this->assertEquals('/de/about', $route);
     }
-
 
     public function test_loads_translated_de_route()
     {
@@ -170,7 +171,7 @@ class UrlGeneratorTest extends TestCase
         Route::get('/en/about', fn () => 'ok')->name('translated_en.about');
         Route::get('/about', fn () => 'ok')->name('without_locale.about');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
 
@@ -190,7 +191,7 @@ class UrlGeneratorTest extends TestCase
         Route::get('/en/about', fn () => 'ok')->name('translated_en.about');
         Route::get('/about', fn () => 'ok')->name('without_locale.about');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
 
@@ -210,7 +211,7 @@ class UrlGeneratorTest extends TestCase
         Route::get('/en/about', fn () => 'ok')->name('translated_en.about');
         Route::get('/about', fn () => 'ok')->name('without_locale.about');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
 
@@ -230,7 +231,7 @@ class UrlGeneratorTest extends TestCase
         Route::get('/en/about', fn () => 'ok')->name('translated_en.about');
         Route::get('/about', fn () => 'ok')->name('without_locale.about');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
         $this->assertInstanceOf(CustomUrlGenerator::class, $url);
 
@@ -246,7 +247,7 @@ class UrlGeneratorTest extends TestCase
         // crash under strict error handlers.
         Route::get('/items/{id}', fn ($id) => $id)->name('items.show');
 
-        /** @var \NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator $url */
+        /** @var UrlGenerator $url */
         $url = app('url');
 
         $this->assertSame('/items/42', $url->route('items.show', 42, false));

@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Services;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Traits\Localizable;
 use LogicException;
@@ -137,13 +138,13 @@ class CurrentRouteLocalizer
 
         $newPath = (! $forcePrefix && $hide && $newLocale === $default)
             ? $bare
-            : $newLocale . '/' . $bare;
+            : $newLocale.'/'.$bare;
 
-        $url = '/' . ltrim($newPath, '/');
+        $url = '/'.ltrim($newPath, '/');
         $query = $request->getQueryString();
 
         if ($query) {
-            $url .= '?' . $query;
+            $url .= '?'.$query;
         }
 
         return $absolute ? url($url) : $url;

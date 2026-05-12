@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Services;
 
 use Illuminate\Support\Facades\Lang;
@@ -14,7 +16,7 @@ class UriTranslatorTest extends TestCase
     {
         parent::setUp();
 
-        $this->translator = new UriTranslator();
+        $this->translator = new UriTranslator;
 
         Lang::addLines([
             'routes.about' => 'ueber',
