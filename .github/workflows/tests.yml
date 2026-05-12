@@ -51,6 +51,9 @@ jobs:
           coverage: none
           tools: composer:v2.8
 
+      - name: Drop github-oauth from composer (composer rejects JWT-format GITHUB_TOKEN)
+        run: composer config --global --unset github-oauth.github.com || true
+
       - name: Cache composer dependencies
         uses: actions/cache@v4
         with:
@@ -109,6 +112,9 @@ jobs:
           extensions: mbstring, intl
           coverage: none
           tools: composer:v2.8
+
+      - name: Drop github-oauth from composer (composer rejects JWT-format GITHUB_TOKEN)
+        run: composer config --global --unset github-oauth.github.com || true
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
@@ -170,6 +176,9 @@ jobs:
           coverage: none
           tools: composer:v2.8
 
+      - name: Drop github-oauth from composer (composer rejects JWT-format GITHUB_TOKEN)
+        run: composer config --global --unset github-oauth.github.com || true
+
       - name: Cache composer dependencies
         uses: actions/cache@v4
         with:
@@ -190,3 +199,26 @@ jobs:
 
       - name: Run Livewire 4 integration tests
         run: vendor/bin/phpunit --testsuite=Livewire4
+
+  pint:
+    runs-on: ubuntu-latest
+    name: Pint code style
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2.8
+
+      - name: Drop github-oauth from composer (composer rejects JWT-format GITHUB_TOKEN)
+        run: composer config --global --unset github-oauth.github.com || true
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --prefer-stable --no-interaction
+
+      - name: Run Pint in check-only mode
+        run: vendor/bin/pint --test
