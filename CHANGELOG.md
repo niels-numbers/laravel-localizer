@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-05-13
+
 ### Internal
 
-- Adopt [Laravel Pint](https://laravel.com/docs/pint) for code style with a minimal preset (Laravel base + `declare_strict_types`, `global_namespace_import`, `no_superfluous_elseif`, `no_useless_else`). A `fix-php-code-style-issues` GitHub workflow auto-commits Pint fixes on push.
+- Adopt [Laravel Pint](https://laravel.com/docs/pint) for code style with a minimal preset (Laravel base + `declare_strict_types`, `global_namespace_import`, `no_superfluous_elseif`, `no_useless_else`). A `fix-php-code-style-issues` GitHub workflow auto-commits Pint fixes on push, and a `pint` job in the test workflow gates PRs with `pint --test`.
+- CI: pass `github-token: ''` to every `shivammathur/setup-php` step. GitHub started rolling out a new App-installation token format (`ghs_<APPID>_<JWT>`) for `GITHUB_TOKEN` whose base64url JWT payload contains dashes - composer's `BaseIO` regex `[.A-Za-z0-9_]` rejects them and aborts every `composer require`/`composer update` call with "github oauth token for github.com contains invalid characters" (composer issues [#12849](https://github.com/composer/composer/issues/12849) / [#12850](https://github.com/composer/composer/pull/12850), no released fix yet). `shivammathur/setup-php` writes the token to `~/.composer/auth.json`, which takes precedence over `COMPOSER_AUTH` env and `composer config --global --unset` doesn't reach - the only reliable fix is to disable the injection at the source.
 
 ### Fixed
 
@@ -137,7 +140,8 @@ Initial public release. Architecture is stable; API may still see adjustments ba
 - Inertia + SPA language switcher guide (experimental) at `docs/inertia-spa-language-switch.md`.
 - CI matrix: PHP 8.2–8.4 × Laravel 9–12 (Testbench 7–10).
 
-[Unreleased]: https://github.com/niels-numbers/laravel-localizer/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/niels-numbers/laravel-localizer/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/niels-numbers/laravel-localizer/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/niels-numbers/laravel-localizer/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/niels-numbers/laravel-localizer/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/niels-numbers/laravel-localizer/compare/v1.1.0...v1.1.1
