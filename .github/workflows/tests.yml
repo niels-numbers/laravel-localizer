@@ -49,7 +49,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: mbstring, intl
           coverage: none
-          tools: composer:v2
+          tools: composer:v2.8
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
@@ -108,7 +108,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: mbstring, intl
           coverage: none
-          tools: composer:v2
+          tools: composer:v2.8
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
@@ -168,7 +168,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: mbstring, intl
           coverage: none
-          tools: composer:v2
+          tools: composer:v2.8
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
