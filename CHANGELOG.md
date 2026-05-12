@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Internal
+
+- Adopt [Laravel Pint](https://laravel.com/docs/pint) for code style with a minimal preset (Laravel base + `declare_strict_types`, `global_namespace_import`, `no_superfluous_elseif`, `no_useless_else`). A `fix-php-code-style-issues` GitHub workflow auto-commits Pint fixes on push.
+
 ### Fixed
 
 - `Route::localizedUrl()` / `Route::localizedSwitcherUrl()`: route defaults no longer leak into the query string. For named routes registered via `Route::view()`, `Route::redirect()`, or any route with `->defaults(...)`, the URL helper previously appended the route's defaults as stray query parameters, e.g. `Route::view('/test', 'test')->name('test')` produced `/test?view=test&status=200` instead of `/test`. The cause was Laravel's `RouteParameterBinder::replaceDefaults()` copying `$route->defaults` into the matched parameter bag (so the controller can read them) - `CurrentRouteLocalizer` then forwarded that whole bag to `route()`, which appends any non-placeholder key as a query string. The helper now restricts forwarded parameters to the URI placeholders returned by `$route->parameterNames()`. Reported in #9.
