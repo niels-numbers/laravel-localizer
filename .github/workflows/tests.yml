@@ -1,5 +1,13 @@
 name: tests
 
+# Why `github-token: ''` on every setup-php below: shivammathur/setup-php
+# auto-injects $GITHUB_TOKEN into ~/.composer/auth.json. GitHub's new
+# `ghs_<APPID>_<JWT>` token format contains dashes; composer's BaseIO regex
+# `[.A-Za-z0-9_]` rejects them (composer issue #12849, PR #12850 unmerged).
+# auth.json also wins over COMPOSER_AUTH env (composer #12084), so the only
+# reliable fix is to stop the injection at the source. Public package, no
+# GitHub auth needed for composer install.
+
 on:
   push:
     branches: [main]
@@ -50,9 +58,7 @@ jobs:
           extensions: mbstring, intl
           coverage: none
           tools: composer:v2.8
-
-      - name: Drop github-oauth from composer (composer rejects JWT-format GITHUB_TOKEN)
-        run: composer config --global --unset github-oauth.github.com || true
+          github-token: ''  # see workflow header for rationale
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
@@ -112,9 +118,7 @@ jobs:
           extensions: mbstring, intl
           coverage: none
           tools: composer:v2.8
-
-      - name: Drop github-oauth from composer (composer rejects JWT-format GITHUB_TOKEN)
-        run: composer config --global --unset github-oauth.github.com || true
+          github-token: ''  # see workflow header for rationale
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
@@ -175,9 +179,7 @@ jobs:
           extensions: mbstring, intl
           coverage: none
           tools: composer:v2.8
-
-      - name: Drop github-oauth from composer (composer rejects JWT-format GITHUB_TOKEN)
-        run: composer config --global --unset github-oauth.github.com || true
+          github-token: ''  # see workflow header for rationale
 
       - name: Cache composer dependencies
         uses: actions/cache@v4
@@ -213,9 +215,7 @@ jobs:
           php-version: '8.3'
           coverage: none
           tools: composer:v2.8
-
-      - name: Drop github-oauth from composer (composer rejects JWT-format GITHUB_TOKEN)
-        run: composer config --global --unset github-oauth.github.com || true
+          github-token: ''  # see workflow header for rationale
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-interaction
