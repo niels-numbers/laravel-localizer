@@ -218,7 +218,7 @@ jobs:
         run: composer config --global --unset github-oauth.github.com || true
 
       - name: Install dependencies
-        run: composer install --prefer-dist --prefer-stable --no-interaction
+        run: composer install --prefer-dist --no-interaction
 
       - name: Run Pint in check-only mode
         run: vendor/bin/pint --test
