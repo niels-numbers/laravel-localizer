@@ -71,29 +71,36 @@ class CurrentRouteLocalizer
 
     protected function localizeNamedRoute($current, ?string $name, string $baseName, string $locale, bool $absolute, bool $forcePrefix = false): string
     {
-        $parameters = $current->parameters();
+        // Restrict to actual URI placeholders. $current->parameters() also
+        // contains route defaults (Route::view sets view/data/status/headers,
+        // Route::redirect sets destination/status, ->defaults() is user-set),
+        // and route() would append any non-placeholder key as a query string.
+        $parameters = array_intersect_key(
+            $current->parameters(),
+            array_flip($current->parameterNames())
+        );
 
         // Force-prefix mode (language switcher): bypass the UrlGenerator's
         // canonical-hiding branch by addressing the prefixed variant by name.
         // Without this, route($baseName) would resolve to without_locale.* for
         // target = default + hide_default, and the resulting unprefixed URL
-        // would carry no locale signal — SetLocale would fall back to session.
+        // would carry no locale signal - SetLocale would fall back to session.
         if ($forcePrefix) {
             $withLocaleName = 'with_locale.'.$baseName;
             if (Route::has($withLocaleName)) {
                 $parameters['locale'] = $locale;
 
-                return route($withLocaleName, $parameters, $absolute);
+                return $this->withQueryString(route($withLocaleName, $parameters, $absolute));
             }
 
             $translatedName = "translated_{$locale}.".$baseName;
             if (Route::has($translatedName)) {
                 unset($parameters['locale']);
 
-                return route($translatedName, $parameters, $absolute);
+                return $this->withQueryString(route($translatedName, $parameters, $absolute));
             }
 
-            // Foreign-named route — no localized variant exists, nothing to
+            // Foreign-named route - no localized variant exists, nothing to
             // force. Fall through to the unforced behavior below.
         }
 
@@ -105,7 +112,18 @@ class CurrentRouteLocalizer
             $parameters['locale'] = $locale;
         }
 
-        return route($baseName, $parameters, $absolute);
+        return $this->withQueryString(route($baseName, $parameters, $absolute));
+    }
+
+    protected function withQueryString(string $url): string
+    {
+        $query = request()?->getQueryString();
+
+        if (! $query) {
+            return $url;
+        }
+
+        return $url.(str_contains($url, '?') ? '&' : '?').$query;
     }
 
     protected function swapUriPrefix(Request $request, string $newLocale, bool $absolute, bool $forcePrefix = false): string

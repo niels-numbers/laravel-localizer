@@ -28,6 +28,12 @@ prefixed form. See [Language Switcher](/language-switcher).
 | Unnamed `Route::translate()` | Resolved through `route()`.|
 | Outside a request | Throws `LogicException`.               |
 
+The current request's query string is preserved on the localized URL,
+so pagination and filter URLs like `/posts?page=2&sort=name` keep the
+user on the same page after a locale switch. Route defaults set by
+`Route::view()`, `Route::redirect()`, or `->defaults()` are stripped
+from the result - they belong to the route's controller, not the URL.
+
 ## `Route::hasLocalized($name)` {#has-localized}
 
 True if the name was registered through `Route::localize()` or

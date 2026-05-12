@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `Route::localizedUrl()` / `Route::localizedSwitcherUrl()`: route defaults no longer leak into the query string. For named routes registered via `Route::view()`, `Route::redirect()`, or any route with `->defaults(...)`, the URL helper previously appended the route's defaults as stray query parameters, e.g. `Route::view('/test', 'test')->name('test')` produced `/test?view=test&status=200` instead of `/test`. The cause was Laravel's `RouteParameterBinder::replaceDefaults()` copying `$route->defaults` into the matched parameter bag (so the controller can read them) - `CurrentRouteLocalizer` then forwarded that whole bag to `route()`, which appends any non-placeholder key as a query string. The helper now restricts forwarded parameters to the URI placeholders returned by `$route->parameterNames()`. Reported in #9.
+- `Route::localizedUrl()` / `Route::localizedSwitcherUrl()`: the request's query string now survives a locale switch on **named** routes, matching the long-standing behavior on unnamed `Route::localize()` routes (which already had the prefix-swap path append `$request->getQueryString()`). Pagination and filter URLs like `/posts?page=2&sort=name` previously dropped the query when switched via the named-route path - clicking a language switcher on page 5 of a list would bounce the user back to page 1.
+
 ## [1.2.1] - 2026-05-08
 
 ### Fixed
@@ -128,7 +133,8 @@ Initial public release. Architecture is stable; API may still see adjustments ba
 - Inertia + SPA language switcher guide (experimental) at `docs/inertia-spa-language-switch.md`.
 - CI matrix: PHP 8.2–8.4 × Laravel 9–12 (Testbench 7–10).
 
-[Unreleased]: https://github.com/niels-numbers/laravel-localizer/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/niels-numbers/laravel-localizer/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/niels-numbers/laravel-localizer/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/niels-numbers/laravel-localizer/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/niels-numbers/laravel-localizer/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/niels-numbers/laravel-localizer/compare/v1.0.1...v1.1.0

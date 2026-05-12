@@ -235,4 +235,62 @@ class LocalizedUrlTest extends TestCase
         $response->assertRedirect('/about');
         $this->assertSame('en', session('locale'));
     }
+
+    public function test_route_view_defaults_do_not_leak_into_localized_url()
+    {
+        // Route::view() seeds the route with view/data/status/headers defaults
+        // for ViewController. RouteParameterBinder copies them into
+        // $route->parameters(); without filtering, route() would append them
+        // as ?view=...&status=200 query params. Probe covers both helpers:
+        // localizedUrl() takes the unforced route() branch, localizedSwitcherUrl()
+        // takes the forcePrefix `with_locale.*` branch — each path uses its own
+        // route() call, so both need to filter parameters.
+        view()->addLocation(__DIR__.'/../fixtures/views');
+
+        Route::middleware(SetLocale::class)->group(function () {
+            Route::localize(function () {
+                Route::view('/test', 'localized-url-probe')->name('test');
+            });
+        });
+
+        $response = $this->get('/de/test');
+
+        $response->assertOk();
+        $response->assertSeeText('LOCALIZED=/test|');
+        $response->assertSeeText('SWITCHER=/en/test|');
+        $response->assertDontSee('view=');
+        $response->assertDontSee('status=');
+    }
+
+    public function test_named_localize_route_preserves_query_string()
+    {
+        Route::middleware(SetLocale::class)->group(function () {
+            Route::localize(function () {
+                Route::get('/posts', fn () => Route::localizedUrl('de', false))->name('posts');
+            });
+        });
+
+        $response = $this->get('/posts?page=2&sort=name');
+
+        $response->assertOk();
+        $response->assertSee('/de/posts?page=2&sort=name', false);
+    }
+
+    public function test_switcher_url_preserves_query_string()
+    {
+        // localizedSwitcherUrl() takes the forcePrefix branch and calls route()
+        // on the `with_locale.*` variant — a separate route() call from the
+        // unforced path, so query-string preservation has to be wired up there
+        // too.
+        Route::middleware(SetLocale::class)->group(function () {
+            Route::localize(function () {
+                Route::get('/posts', fn () => Route::localizedSwitcherUrl('de', false))->name('posts');
+            });
+        });
+
+        $response = $this->get('/posts?page=2&sort=name');
+
+        $response->assertOk();
+        $response->assertSee('/de/posts?page=2&sort=name', false);
+    }
 }
