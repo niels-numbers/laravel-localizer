@@ -54,7 +54,9 @@ class SetLocale
         // first argument — `index($country = null)` on /de/users would receive
         // 'de' instead of null. App::getLocale() and URL::defaults() already
         // carry the locale; the controller has no business consuming it again.
-        $request->route()?->forgetParameter('locale');
+        // Route is guaranteed non-null here: the early return at the top
+        // of the method bails out when no route matched.
+        $request->route()->forgetParameter('locale');
 
         return $next($request);
     }

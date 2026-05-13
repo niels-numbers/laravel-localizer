@@ -36,7 +36,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         $this->registerUrlGenerator();
     }
 
-    protected function registerUrlGenerator()
+    protected function registerUrlGenerator(): void
     {
         $this->app->singleton('url', function ($app) {
             $routes = $app['router']->getRoutes();
@@ -78,7 +78,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         });
     }
 
-    protected function requestRebinder()
+    protected function requestRebinder(): Closure
     {
         return function ($app, $request) {
             $app['url']->setRequest($request);
@@ -142,8 +142,12 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
         // Convenience: `Route::current()?->baseName()` without the null
         // dance. Returns null outside of a request, same as Route::current().
+        // Calls the LocalizerFacade directly instead of dispatching through
+        // the `baseName` macro on the Route instance - same result, but
+        // avoids a static-analysis dead-end where PHPStan/Larastan don't
+        // see the per-instance macro.
         Route::macro('currentBaseName', function (): ?string {
-            return Route::current()?->baseName();
+            return LocalizerFacade::baseName(Route::current()?->getName());
         });
 
         // Is the current request handled by a localizer-managed route?

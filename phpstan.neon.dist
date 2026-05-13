@@ -1,0 +1,22 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+
+    paths:
+        - src
+
+    # Optional Ziggy integrations. The package ships adapter shims for
+    # both Ziggy v1 (`tightenco/ziggy`) and v2 (`tighten/ziggy`); users
+    # install whichever upstream they're on, so the parent classes are
+    # not available at analysis time. The shims are tiny (~20 lines
+    # each) and exercised by the integration tests against real Ziggy.
+    excludePaths:
+        - src/Routing/LocalizerZiggyV1.php
+        - src/Routing/LocalizerZiggyV2.php
+        - src/Routing/LocalizerBladeRouteGeneratorV1.php
+        # The trait is only used by the Ziggy adapter shims above.
+        # Without a visible using class PHPStan can't analyse it
+        # properly (no `$this` context), so it follows them out.
+        - src/Routing/Concerns/RewritesRoutesForLocale.php

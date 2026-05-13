@@ -32,6 +32,9 @@ class Localizer
         protected LocaleDirection $direction,
     ) {}
 
+    /**
+     * @return array<int, string>
+     */
     public function supportedLocales(): array
     {
         return Config::get('localizer.supported_locales', []);
@@ -163,6 +166,9 @@ class Localizer
         return Config::get('localizer.persist_locale.cookie', true);
     }
 
+    /**
+     * @return array<int, class-string>
+     */
     public function detectors(): array
     {
         return Config::get('localizer.detectors', []);

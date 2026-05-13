@@ -11,6 +11,9 @@ use NielsNumbers\LaravelLocalizer\Contracts\DetectorInterface;
 
 class BrowserDetector implements DetectorInterface
 {
+    /**
+     * @return string|array<int, string>|null
+     */
     public function detect(Request $request): string|array|null
     {
         $header = $request->header('Accept-Language');

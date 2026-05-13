@@ -9,6 +9,10 @@ use NielsNumbers\LaravelLocalizer\Facades\Localizer;
 
 trait RewritesRoutesForLocale
 {
+    /**
+     * @param  array<string, mixed>  $routes
+     * @return array<string, mixed>
+     */
     protected function rewriteForCurrentLocale(array $routes): array
     {
         $appLocale = App::getLocale();

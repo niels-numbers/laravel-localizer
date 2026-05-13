@@ -12,6 +12,12 @@ class UserDetector implements DetectorInterface
 {
     public function detect(Request $request): ?string
     {
-        return Auth::user()?->locale ?? null;
+        // `locale` is not part of the framework's User contract. Read
+        // it via the Eloquent attribute accessor so any model that
+        // exposes the column (or a custom accessor) works without
+        // committing to a concrete user class.
+        $locale = Auth::user()?->getAttribute('locale');
+
+        return is_string($locale) ? $locale : null;
     }
 }

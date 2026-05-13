@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `Localizer` now takes a `LocaleDirection` instance as its second constructor argument. The default `ServiceProvider` binding has been updated. Custom service container overrides that re-bind `Localizer::class` need to pass the new dependency.
+- `Route::currentBaseName()` macro: route through `Localizer::baseName(Route::current()?->getName())` instead of `Route::current()?->baseName()`. Same result, but avoids a per-instance macro that static analysis can't follow. Public behavior is unchanged.
+- `Detectors\UserDetector`: read the user's locale via `getAttribute('locale')` instead of direct property access, so the detector is typed against the framework's User contract instead of relying on an app-specific property declaration.
+
+### Internal
+
+- Adopt [Larastan](https://github.com/larastan/larastan) (PHPStan with Laravel extensions) at level 6 over `src/`, no baseline. A `phpstan` job in the test workflow gates PRs. The three optional Ziggy adapter shims (`LocalizerZiggyV1`, `LocalizerZiggyV2`, `LocalizerBladeRouteGeneratorV1`) and the trait they share are excluded from analysis: they extend vendor classes from upstream Ziggy that the package does not require, so PHPStan has no parent to follow. The shims stay covered by the Livewire/Ziggy integration test jobs that install a real Ziggy.
+- PHPDoc type coverage: locale arrays (`array<int, string>`), detector class lists (`array<int, class-string>`), and route parameter bags (`array<string, mixed>`) are now annotated on the public API and on internal helpers (`Localizer`, `Facades\Localizer`, `Illuminate\Routing\UrlGenerator`, the `DetectorInterface`).
 
 ## [1.2.2] - 2026-05-13
 

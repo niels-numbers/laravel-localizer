@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NielsNumbers\LaravelLocalizer\Services;
 
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route as RouteInstance;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Traits\Localizable;
 use LogicException;
@@ -70,7 +71,7 @@ class CurrentRouteLocalizer
         });
     }
 
-    protected function localizeNamedRoute($current, ?string $name, string $baseName, string $locale, bool $absolute, bool $forcePrefix = false): string
+    protected function localizeNamedRoute(RouteInstance $current, ?string $name, string $baseName, string $locale, bool $absolute, bool $forcePrefix = false): string
     {
         // Restrict to actual URI placeholders. $current->parameters() also
         // contains route defaults (Route::view sets view/data/status/headers,
@@ -118,7 +119,11 @@ class CurrentRouteLocalizer
 
     protected function withQueryString(string $url): string
     {
-        $query = request()?->getQueryString();
+        // request() is guaranteed non-null here: this method is only
+        // reachable through localize(), which throws when no current
+        // route exists - and there is no current route without a
+        // request bound in the container.
+        $query = request()->getQueryString();
 
         if (! $query) {
             return $url;

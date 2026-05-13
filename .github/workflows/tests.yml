@@ -222,3 +222,25 @@ jobs:
 
       - name: Run Pint in check-only mode
         run: vendor/bin/pint --test
+
+  phpstan:
+    runs-on: ubuntu-latest
+    name: PHPStan static analysis
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl
+          coverage: none
+          tools: composer:v2.8
+          github-token: ''  # see workflow header for rationale
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress

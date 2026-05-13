@@ -37,7 +37,8 @@ class UrlGenerator extends BaseUrlGenerator
      *   5. Fallback — degrade to the default-locale variant and let
      *      parent::route() raise RouteNotFoundException if it doesn't exist.
      *
-     * @return array{0: string, 1: array}
+     * @param  array<string, mixed>  $parameters
+     * @return array{0: string, 1: array<string, mixed>}
      */
     protected function resolveRouteName(string $name, array $parameters): array
     {
