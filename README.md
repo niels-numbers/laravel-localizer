@@ -39,10 +39,11 @@ How `/about` resolves at request time:
 1. **First visit**: the package reads the `Accept-Language` header
    (or your own detector chain) and redirects to the matching
    localized URL.
-2. **Subsequent visits**: the locale is taken from the session and
+2. **Subsequent visits**: an explicit URL prefix always wins.
+   Without a URL signal, the locale is taken from the session and
    cookie. The user is redirected to the prefixed variant unless
    their locale matches the default and `hide_default_locale` is on -
-   in which case they stay on `/about`.
+   in which case they are redirected or stay on `/about`.
 3. **Fallback**: when no signal matches, the configured default
    locale is used.
 
