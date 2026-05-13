@@ -131,14 +131,22 @@ helper as a static `.ts` file at build/watch time, with the same call
 shape as Ziggy (`route(name, params?, absolute?)`). Because the file is
 emitted ahead of time, there's no per-request hook to intercept the way
 the Ziggy adapter does - the locale-aware variant pick has to happen
-client-side, the same shape as the Wayfinder helper above. The wrapper
-is slightly simpler though, because the generated `route()` already
-knows all three variant namespaces (`with_locale.*`, `without_locale.*`,
-`translated_<locale>.*`) as first-class route names:
+client-side. The wrapper is roughly Wayfinder-shaped, but with one
+quirk: the generated module exports only the `route` function, not the
+underlying `routes` object or the `RouteParameters` type ([source][1]).
+That's enough for `Route::localize()` routes; `Route::translate()`
+routes need a small extra dance.
+
+### `Route::localize()` only
+
+If your app only uses `Route::localize()`, the wrapper is fully typed
+without depending on any non-exported members. Use the
+`Parameters<typeof route>` utility to derive route names from the
+exported function signature:
 
 ```ts
 // resources/js/route.ts
-import { route as baseRoute, type RouteParameters } from '@/helpers/route';
+import { route as baseRoute } from '@/helpers/route';
 
 const DEFAULT_LOCALE = 'en';   // mirror config('app.fallback_locale')
 const HIDE_DEFAULT   = true;   // mirror localizer.hide_default_locale
@@ -150,36 +158,31 @@ function currentLocale(): string {
     return document.documentElement.lang || DEFAULT_LOCALE;
 }
 
-// Bare route names = anything registered as `with_locale.<X>`, with the prefix stripped.
-type BareName<K = keyof RouteParameters> =
+// Recover the route-name union from the exported function signature,
+// since `RouteParameters` isn't exported.
+type RouteName = Parameters<typeof baseRoute>[0];
+
+// Bare names = anything registered as `with_locale.<X>`, prefix stripped.
+type BareName<K = RouteName> =
     K extends `with_locale.${infer N}` ? N : never;
-
-type ParamsFor<N extends BareName> =
-    RouteParameters[`with_locale.${N}` & keyof RouteParameters];
-
-type LocaleParams<N extends BareName> =
-    [ParamsFor<N>] extends [never]
-        ? { locale?: string }
-        : Omit<ParamsFor<N>, 'locale'> & { locale?: string };
 
 export function route<N extends BareName>(
     name: N,
-    parameters?: LocaleParams<N>,
+    parameters: Record<string, any> = {},
     absolute: boolean = true,
 ): string {
-    const { locale = currentLocale(), ...rest } =
-        (parameters ?? {}) as Record<string, any>;
+    const { locale = currentLocale(), ...rest } = parameters;
 
     if (HIDE_DEFAULT && locale === DEFAULT_LOCALE) {
         return baseRoute(
-            `without_locale.${name}` as keyof RouteParameters,
+            `without_locale.${name}` as RouteName,
             rest as any,
             absolute,
         );
     }
 
     return baseRoute(
-        `with_locale.${name}` as keyof RouteParameters,
+        `with_locale.${name}` as RouteName,
         { ...rest, locale } as any,
         absolute,
     );
@@ -198,12 +201,33 @@ route('about', { locale: 'en' }); // 'https://app.test/about' (= default, hide_d
 route('about', {}, false);        // '/de/about' (relative)
 ```
 
-For `Route::translate()` routes, add one branch at the top of the
-wrapper that prefers `translated_<locale>.<name>` when present. Since
-`RouteParameters` is erased at runtime, either keep a small `Set` of
-route names that have translated variants, or re-export the generated
-`routes` object from your typescript-transformer config and check
-membership against that.
+### With `Route::translate()`
+
+`Route::translate()` registers each variant under
+`translated_<locale>.<name>` and does **not** register a `with_locale.*`
+counterpart. To know whether to dispatch `with_locale.about` or
+`translated_de.about`, the wrapper needs a runtime existence check
+against the generated routes manifest - and that's exactly the object
+`spatie/laravel-typescript-transformer` doesn't expose.
+
+Until [the upstream export][1] lands, maintain the list manually:
+
+```ts
+// Names that were registered with Route::translate() instead of Route::localize()
+const TRANSLATED_ROUTES = new Set<string>(['about', 'contact']);
+
+// Insert at the top of route() above, before the hide-default branch:
+if (TRANSLATED_ROUTES.has(name)) {
+    return baseRoute(`translated_${locale}.${name}` as RouteName, rest as any, absolute);
+}
+```
+
+The set has to be kept in sync with the PHP side by hand. If you have
+many translated routes, an alternative is to dump the list at build
+time (e.g. from an Artisan command that emits a small JSON file the
+wrapper imports) so you don't track it in two places.
+
+[1]: https://github.com/spatie/laravel-typescript-transformer/blob/main/src/TransformedProviders/LaravelRouteTransformedProvider.php
 
 ## Cross-locale URLs and SEO
 
