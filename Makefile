@@ -9,3 +9,9 @@ install:
 
 test:
 	UID=$(UID) GID=$(GID) docker compose run --rm test vendor/bin/phpunit
+
+pint:
+	UID=$(UID) GID=$(GID) docker compose run --rm test vendor/bin/pint --test
+
+phpstan:
+	UID=$(UID) GID=$(GID) docker compose run --rm test vendor/bin/phpstan analyse --memory-limit=512M
