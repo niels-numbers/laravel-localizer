@@ -226,13 +226,13 @@ produces `'/' + undefined` and the function returns; if a future release
 throws or returns `''` instead, the `exists()` helper here will need a
 one-line adjustment. The cleaner long-term fix is for the generator to
 export `routes` or emit a dedicated `routeExists()` helper - tracked
-upstream in [spatie/laravel-typescript-transformer issue #TODO][2].
-Until then, the body-inspection approach is what makes the wrapper
-robust against Plain-routes-vs-`Route::localize()`-vs-`Route::translate()`
+upstream in [spatie/typescript-transformer discussion #151][2]. Until
+then, the body-inspection approach is what makes the wrapper robust
+against Plain-routes-vs-`Route::localize()`-vs-`Route::translate()`
 without a hand-maintained registry.
 
 [1]: https://github.com/spatie/laravel-typescript-transformer/blob/main/src/TransformedProviders/LaravelRouteTransformedProvider.php
-[2]: https://github.com/spatie/laravel-typescript-transformer/issues/TODO
+[2]: https://github.com/spatie/typescript-transformer/discussions/151
 
 ## Cross-locale URLs and SEO
 
