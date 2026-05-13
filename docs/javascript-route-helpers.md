@@ -11,6 +11,7 @@ the server.
 |---|---|---|
 | **Ziggy** | `route('about')`, unchanged | One container binding |
 | **Wayfinder** | `localizedRoute('about')` | TS helper module |
+| **spatie/laravel-typescript-transformer** | `route('about')` from your wrapper | TS helper module |
 
 ## Ziggy
 
@@ -122,6 +123,87 @@ localizedRoute('about', { locale: 'en' }); // '/about'   (= default, hide_defaul
 For `Route::translate()` routes, extend the helper with one extra branch
 that imports `@/routes/translated_<locale>` and dispatches by the active
 locale; same pattern.
+
+## spatie/laravel-typescript-transformer
+
+`LaravelRouteTransformedProvider` (v3+) generates a typed `route()`
+helper as a static `.ts` file at build/watch time, with the same call
+shape as Ziggy (`route(name, params?, absolute?)`). Because the file is
+emitted ahead of time, there's no per-request hook to intercept the way
+the Ziggy adapter does - the locale-aware variant pick has to happen
+client-side, the same shape as the Wayfinder helper above. The wrapper
+is slightly simpler though, because the generated `route()` already
+knows all three variant namespaces (`with_locale.*`, `without_locale.*`,
+`translated_<locale>.*`) as first-class route names:
+
+```ts
+// resources/js/route.ts
+import { route as baseRoute, type RouteParameters } from '@/helpers/route';
+
+const DEFAULT_LOCALE = 'en';   // mirror config('app.fallback_locale')
+const HIDE_DEFAULT   = true;   // mirror localizer.hide_default_locale
+
+// Use whatever locale source you have. With Inertia, share it from the
+// server: HandleInertiaRequests::share() returns ['locale' => app()->getLocale()]
+// and you read usePage().props.locale here.
+function currentLocale(): string {
+    return document.documentElement.lang || DEFAULT_LOCALE;
+}
+
+// Bare route names = anything registered as `with_locale.<X>`, with the prefix stripped.
+type BareName<K = keyof RouteParameters> =
+    K extends `with_locale.${infer N}` ? N : never;
+
+type ParamsFor<N extends BareName> =
+    RouteParameters[`with_locale.${N}` & keyof RouteParameters];
+
+type LocaleParams<N extends BareName> =
+    [ParamsFor<N>] extends [never]
+        ? { locale?: string }
+        : Omit<ParamsFor<N>, 'locale'> & { locale?: string };
+
+export function route<N extends BareName>(
+    name: N,
+    parameters?: LocaleParams<N>,
+    absolute: boolean = true,
+): string {
+    const { locale = currentLocale(), ...rest } =
+        (parameters ?? {}) as Record<string, any>;
+
+    if (HIDE_DEFAULT && locale === DEFAULT_LOCALE) {
+        return baseRoute(
+            `without_locale.${name}` as keyof RouteParameters,
+            rest as any,
+            absolute,
+        );
+    }
+
+    return baseRoute(
+        `with_locale.${name}` as keyof RouteParameters,
+        { ...rest, locale } as any,
+        absolute,
+    );
+}
+```
+
+Usage matches Laravel's server-side `route()` one-to-one - just import
+from the wrapper instead of `@/helpers/route` directly:
+
+```ts
+import { route } from '@/route';
+
+route('about');                   // 'https://app.test/de/about' (current = de)
+route('about', { locale: 'fr' }); // 'https://app.test/fr/about'
+route('about', { locale: 'en' }); // 'https://app.test/about' (= default, hide_default)
+route('about', {}, false);        // '/de/about' (relative)
+```
+
+For `Route::translate()` routes, add one branch at the top of the
+wrapper that prefers `translated_<locale>.<name>` when present. Since
+`RouteParameters` is erased at runtime, either keep a small `Set` of
+route names that have translated variants, or re-export the generated
+`routes` object from your typescript-transformer config and check
+membership against that.
 
 ## Cross-locale URLs and SEO
 
