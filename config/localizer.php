@@ -21,4 +21,9 @@ return [
         UserDetector::class,
         BrowserDetector::class,
     ],
+
+    // Per-locale override for writing direction. Keys must match the
+    // locale codes used in `supported_locales`. Values: 'rtl' or 'ltr'.
+    // Wins over the script-based detection in `LocaleDirection`.
+    'locale_directions' => [],
 ];

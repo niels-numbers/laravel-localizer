@@ -16,6 +16,7 @@ This creates `config/localizer.php`.
 | `persist_locale.cookie` | `bool` | `true` | If `true`, the detected locale is stored in a browser cookie. |
 | `detectors` | `array` | `[UserDetector::class, BrowserDetector::class]` | Ordered list of classes used to detect a user's locale when no locale is found in the URL, session, or cookie. See [Detectors](/detectors). |
 | `redirect_enabled` | `bool` | `true` | Enables or disables automatic redirects between prefixed and unprefixed routes. See [Redirects](/redirects). |
+| `locale_directions` | `array` | `[]` | Per-locale override for writing direction (`'rtl'` or `'ltr'`). Wins over auto-detection. See [Locale direction](/template-helpers#locale-direction). |
 
 ## Default locale
 

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Localizer::currentLocaleDirection()` and `Localizer::localeDirection($locale)`: resolve the writing direction (`'rtl'` or `'ltr'`) for the current app locale or any given locale. Use in templates: `<html dir="{{ Localizer::currentLocaleDirection() }}">`. Resolution chain is (1) explicit per-locale override via `localizer.locale_directions`, (2) BCP 47 script subtag matched against an ISO 15924 RTL script list (`uz-Arab` -> rtl, `uz-Latn` -> ltr) when `ext-intl` is available, (3) primary language subtag matched against a built-in language -> script map (covers `ar`, `fa`, `ur`, `ps`, `sd`, `ks`, `ug`, `ku`, `he`, `yi`, `dv` by default). Apps that need to extend either set can merge into them via `localizer.language_scripts` and `localizer.rtl_scripts` - user values are merged with the defaults, so common locales work without any config. Logic lives in `Services\LocaleDirection`; the `Localizer` methods pass through.
+
+### Changed
+
+- `Localizer` now takes a `LocaleDirection` instance as its second constructor argument. The default `ServiceProvider` binding has been updated. Custom service container overrides that re-bind `Localizer::class` need to pass the new dependency.
+
 ## [1.2.2] - 2026-05-13
 
 ### Internal

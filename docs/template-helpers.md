@@ -93,3 +93,70 @@ if (Route::currentBaseName() === 'about') {
 The same logic is exposed as `Localizer::baseName($name)` if you need
 to strip an arbitrary route name (e.g. one read from logs or a queue
 payload).
+
+## `Localizer::currentLocaleDirection()` and `Localizer::localeDirection($locale)` {#locale-direction}
+
+Writing direction (`'rtl'` or `'ltr'`) for the current app locale, or
+for any locale you pass in. Typical use is the `dir` attribute on
+`<html>`:
+
+```blade
+<html lang="{{ app()->getLocale() }}" dir="{{ Localizer::currentLocaleDirection() }}">
+```
+
+`localeDirection($locale)` is the per-locale variant, useful when
+rendering a list of options in a language switcher:
+
+```blade
+@foreach (config('localizer.supported_locales') as $locale)
+    <a href="{{ Route::localizedSwitcherUrl($locale) }}"
+       dir="{{ Localizer::localeDirection($locale) }}">
+        {{ $locale }}
+    </a>
+@endforeach
+```
+
+### How the direction is resolved
+
+Three steps, first match wins:
+
+1. **Explicit override** via `localizer.locale_directions`. Highest
+   priority - useful when you want to pin an unusual locale or
+   override the auto-detection:
+
+   ```php
+   // config/localizer.php
+   'locale_directions' => [
+       'ku'  => 'rtl', // pin Kurdish to RTL even though some variants are LTR
+   ],
+   ```
+
+2. **Script subtag** in the locale itself, matched against an
+   ISO 15924 RTL script list. `uz-Arab` resolves to `rtl`,
+   `uz-Latn` to `ltr`. Needs `ext-intl` (used by default in most
+   Laravel setups).
+
+3. **Language default script**. Languages without an explicit script
+   subtag (`ar`, `fa`, `he`, ...) are looked up in a built-in map
+   and matched against the RTL script list. Languages not in the
+   map fall back to `'ltr'`.
+
+The built-in RTL languages cover `ar`, `fa`, `ur`, `ps`, `sd`, `ks`,
+`ug`, `ku`, `he`, `yi`, `dv`. The built-in RTL scripts cover `Arab`,
+`Hebr`, `Thaa`, `Nkoo`, `Mand`, `Adlm`, `Rohg`, `Yezi`.
+
+If you need to extend either set, add config keys (your values are
+merged with the defaults; you don't need to repeat them):
+
+```php
+// config/localizer.php
+'language_scripts' => [
+    'xx' => 'Arab', // your invented language code maps to Arabic script
+],
+'rtl_scripts' => [
+    // extra ISO 15924 codes you want treated as RTL
+],
+```
+
+For most apps just listing locales in `supported_locales` is enough -
+the defaults handle the common cases without further configuration.

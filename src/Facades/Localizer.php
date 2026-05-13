@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static void setLocale(string $locale)
  * @method static string url(string $name, ?string $locale = null)
  * @method static ?string baseName(?string $name)
+ * @method static string localeDirection(string $locale)
+ * @method static string currentLocaleDirection()
  */
 class Localizer extends Facade
 {

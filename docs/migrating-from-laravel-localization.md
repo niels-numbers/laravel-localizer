@@ -311,3 +311,11 @@ straightforward.
 - **Nested locale metadata** (`name`, `script`, `native`, `regional`).
   Not part of this package's config. Keep that data in your own list
   if your switcher renders it.
+- **`getCurrentLocaleDirection()` (RTL/LTR).** Available as
+  `Localizer::currentLocaleDirection()` and
+  `Localizer::localeDirection($locale)`. Unlike the old package these
+  do **not** require per-locale `script` config - common RTL languages
+  are detected from defaults, BCP 47 script subtags (`uz-Arab`,
+  `pa-Arab`) are honored, and per-locale overrides are available via
+  `localizer.locale_directions`. See
+  [Locale direction](/template-helpers#locale-direction).

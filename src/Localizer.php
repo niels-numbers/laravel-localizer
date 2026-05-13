@@ -7,6 +7,7 @@ namespace NielsNumbers\LaravelLocalizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
+use NielsNumbers\LaravelLocalizer\Services\LocaleDirection;
 use NielsNumbers\LaravelLocalizer\Services\UriTranslator;
 
 class Localizer
@@ -27,7 +28,8 @@ class Localizer
     protected ?string $activeDefaultLocale = null;
 
     public function __construct(
-        protected UriTranslator $translator
+        protected UriTranslator $translator,
+        protected LocaleDirection $direction,
     ) {}
 
     public function supportedLocales(): array
@@ -206,5 +208,25 @@ class Localizer
         }
 
         return $name;
+    }
+
+    /**
+     * Writing direction ('rtl' or 'ltr') for the given locale. See
+     * `LocaleDirection` for the resolution order and how to extend
+     * the script/language defaults via config.
+     */
+    public function localeDirection(string $locale): string
+    {
+        return $this->direction->for($locale);
+    }
+
+    /**
+     * Writing direction for the current application locale
+     * (`app()->getLocale()`). Convenience for templates:
+     * `<html dir="{{ Localizer::currentLocaleDirection() }}">`.
+     */
+    public function currentLocaleDirection(): string
+    {
+        return $this->direction->current();
     }
 }

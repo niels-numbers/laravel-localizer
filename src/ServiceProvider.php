@@ -14,6 +14,7 @@ use NielsNumbers\LaravelLocalizer\Illuminate\Routing\UrlGenerator;
 use NielsNumbers\LaravelLocalizer\Macros\LocalizeMacro;
 use NielsNumbers\LaravelLocalizer\Macros\TranslateMacro;
 use NielsNumbers\LaravelLocalizer\Services\CurrentRouteLocalizer;
+use NielsNumbers\LaravelLocalizer\Services\LocaleDirection;
 use NielsNumbers\LaravelLocalizer\Services\UriTranslator;
 
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
@@ -29,7 +30,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 
     public function register(): void
     {
-        $this->app->singleton(Localizer::class, fn () => new Localizer(new UriTranslator));
+        $this->app->singleton(Localizer::class, fn () => new Localizer(new UriTranslator, new LocaleDirection));
         $this->mergeConfigFrom(__DIR__.'/../config/localizer.php', 'localizer');
 
         $this->registerUrlGenerator();
