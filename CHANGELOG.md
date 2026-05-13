@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Internal
 
-- Adopt [Larastan](https://github.com/larastan/larastan) (PHPStan with Laravel extensions) at level 6 over `src/`, no baseline. A `phpstan` job in the test workflow gates PRs. The three optional Ziggy adapter shims (`LocalizerZiggyV1`, `LocalizerZiggyV2`, `LocalizerBladeRouteGeneratorV1`) and the trait they share are excluded from analysis: they extend vendor classes from upstream Ziggy that the package does not require, so PHPStan has no parent to follow. The shims stay covered by the Livewire/Ziggy integration test jobs that install a real Ziggy.
+- Adopt [Larastan](https://github.com/larastan/larastan) (PHPStan with Laravel extensions) at level 6 over `src/`, no baseline. A `phpstan` job in the test workflow gates PRs. The `require-dev` constraint is `^2.9 || ^3.0` so Composer can pick a compatible version per Laravel matrix slot: v2.x supports Laravel 9-11, v3.x supports Laravel 11.15+/12/13. The three optional Ziggy adapter shims (`LocalizerZiggyV1`, `LocalizerZiggyV2`, `LocalizerBladeRouteGeneratorV1`) and the trait they share are excluded from analysis: they extend vendor classes from upstream Ziggy that the package does not require, so PHPStan has no parent to follow. The shims stay covered by the Livewire/Ziggy integration test jobs that install a real Ziggy.
 - PHPDoc type coverage: locale arrays (`array<int, string>`), detector class lists (`array<int, class-string>`), and route parameter bags (`array<string, mixed>`) are now annotated on the public API and on internal helpers (`Localizer`, `Facades\Localizer`, `Illuminate\Routing\UrlGenerator`, the `DetectorInterface`).
 
 ## [1.2.2] - 2026-05-13
