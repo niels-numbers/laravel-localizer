@@ -21,11 +21,35 @@ Route::localize(function () {
 
 Produces:
 
-- `/about` for the default locale (e.g. English), prefix hidden
+- `/about` - this endpoint carries the package's core magic: auto-detection, redirect, or default locale (see below)
 - `/de/about`, `/fr/about`, ... for every other configured locale
+
+Every route is registered **twice** as a static route:
+
+```
+GET|HEAD  about ............... without_locale.about › AboutController
+GET|HEAD  {locale}/about .......... with_locale.about › AboutController
+```
 
 In your application code, keep using `route('about')`; the package
 picks the right variant based on the current locale.
+
+How `/about` resolves at request time:
+
+1. **First visit**: the package reads the `Accept-Language` header
+   (or your own detector chain) and redirects to the matching
+   localized URL.
+2. **Subsequent visits**: the locale is taken from the session and
+   cookie. The user is redirected to the prefixed variant unless
+   their locale matches the default and `hide_default_locale` is on -
+   in which case they stay on `/about`.
+3. **Fallback**: when no signal matches, the configured default
+   locale is used.
+
+> **Note**: a switcher link to plain `/about` carries no locale
+> signal - `RedirectLocale` would send the user back to their session
+> locale instead of switching. See
+> [Language Switcher](https://localizer.adam-nielsen.de/language-switcher) for more.
 
 ## Install
 
