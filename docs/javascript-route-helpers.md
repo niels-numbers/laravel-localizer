@@ -131,18 +131,16 @@ helper as a static `.ts` file at build/watch time, with the same call
 shape as Ziggy (`route(name, params?, absolute?)`). Because the file is
 emitted ahead of time, there's no per-request hook to intercept the way
 the Ziggy adapter does - the locale-aware variant pick has to happen
-client-side. The wrapper is roughly Wayfinder-shaped, but with one
-quirk: the generated module exports only the `route` function, not the
-underlying `routes` object or the `RouteParameters` type ([source][1]).
-That's enough for `Route::localize()` routes; `Route::translate()`
-routes need a small extra dance.
+client-side. The wrapper mirrors the server-side resolver in
+`Illuminate\Routing\UrlGenerator` one-to-one: probe each candidate name
+against the manifest, take the first that exists.
 
-### `Route::localize()` only
-
-If your app only uses `Route::localize()`, the wrapper is fully typed
-without depending on any non-exported members. Use the
-`Parameters<typeof route>` utility to derive route names from the
-exported function signature:
+The generator emits the `routes` lookup object but doesn't export it
+([source][1]), so the wrapper detects existence by inspecting the
+return value: a name that isn't in the manifest produces `/undefined`
+(or `<origin>/undefined` for absolute URLs), because the generated body
+does `'/' + routes[name]`. That's a working primitive today; for a
+forward-compatible note see ["Caveats"](#caveats) below.
 
 ```ts
 // resources/js/route.ts
@@ -162,30 +160,47 @@ function currentLocale(): string {
 // since `RouteParameters` isn't exported.
 type RouteName = Parameters<typeof baseRoute>[0];
 
-// Bare names = anything registered as `with_locale.<X>`, prefix stripped.
-type BareName<K = RouteName> =
-    K extends `with_locale.${infer N}` ? N : never;
+// "Does this route name exist in the manifest?" by inspecting the
+// generated body's '/' + routes[name] miss behavior.
+function exists(name: string): boolean {
+    return baseRoute(name as RouteName, {} as any, false) !== '/undefined';
+}
 
-export function route<N extends BareName>(
-    name: N,
+export function route(
+    name: string,
     parameters: Record<string, any> = {},
     absolute: boolean = true,
 ): string {
     const { locale = currentLocale(), ...rest } = parameters;
 
-    if (HIDE_DEFAULT && locale === DEFAULT_LOCALE) {
-        return baseRoute(
-            `without_locale.${name}` as RouteName,
-            rest as any,
-            absolute,
-        );
+    // 1. Exact match - plain Laravel routes registered outside the
+    //    locale macros (admin.dashboard, api.health, etc.).
+    if (exists(name)) {
+        return baseRoute(name as RouteName, parameters as any, absolute);
     }
 
-    return baseRoute(
-        `with_locale.${name}` as RouteName,
-        { ...rest, locale } as any,
-        absolute,
-    );
+    // 2. hide_default branch - drop the prefix when both target and
+    //    current app are in the default locale and there's an
+    //    unprefixed variant registered.
+    const withoutN = `without_locale.${name}`;
+    if (HIDE_DEFAULT && locale === DEFAULT_LOCALE && exists(withoutN)) {
+        return baseRoute(withoutN as RouteName, rest as any, absolute);
+    }
+
+    // 3. Route::localize() variant.
+    const withN = `with_locale.${name}`;
+    if (exists(withN)) {
+        return baseRoute(withN as RouteName, { ...rest, locale } as any, absolute);
+    }
+
+    // 4. Route::translate() variant - locale baked into the URI, no
+    //    locale parameter.
+    const translatedN = `translated_${locale}.${name}`;
+    if (exists(translatedN)) {
+        return baseRoute(translatedN as RouteName, rest as any, absolute);
+    }
+
+    throw new Error(`Route "${name}" not found for locale "${locale}"`);
 }
 ```
 
@@ -195,39 +210,29 @@ from the wrapper instead of `@/helpers/route` directly:
 ```ts
 import { route } from '@/route';
 
-route('about');                   // 'https://app.test/de/about' (current = de)
+route('about');                   // 'https://app.test/de/about' (current = de, Route::localize())
 route('about', { locale: 'fr' }); // 'https://app.test/fr/about'
-route('about', { locale: 'en' }); // 'https://app.test/about' (= default, hide_default)
+route('about', { locale: 'en' }); // 'https://app.test/about'   (= default, hide_default)
 route('about', {}, false);        // '/de/about' (relative)
+route('admin.dashboard');         // 'https://app.test/admin/dashboard' (plain route, no prefix)
+route('contact');                 // 'https://app.test/kontakt'  (Route::translate(['en' => 'contact', 'de' => 'kontakt']))
 ```
 
-### With `Route::translate()`
+### Caveats
 
-`Route::translate()` registers each variant under
-`translated_<locale>.<name>` and does **not** register a `with_locale.*`
-counterpart. To know whether to dispatch `with_locale.about` or
-`translated_de.about`, the wrapper needs a runtime existence check
-against the generated routes manifest - and that's exactly the object
-`spatie/laravel-typescript-transformer` doesn't expose.
-
-Until [the upstream export][1] lands, maintain the list manually:
-
-```ts
-// Names that were registered with Route::translate() instead of Route::localize()
-const TRANSLATED_ROUTES = new Set<string>(['about', 'contact']);
-
-// Insert at the top of route() above, before the hide-default branch:
-if (TRANSLATED_ROUTES.has(name)) {
-    return baseRoute(`translated_${locale}.${name}` as RouteName, rest as any, absolute);
-}
-```
-
-The set has to be kept in sync with the PHP side by hand. If you have
-many translated routes, an alternative is to dump the list at build
-time (e.g. from an Artisan command that emits a small JSON file the
-wrapper imports) so you don't track it in two places.
+The `'/undefined'` detection depends on the body of the generated
+`route()`. As of `spatie/laravel-typescript-transformer` v3, a miss
+produces `'/' + undefined` and the function returns; if a future release
+throws or returns `''` instead, the `exists()` helper here will need a
+one-line adjustment. The cleaner long-term fix is for the generator to
+export `routes` or emit a dedicated `routeExists()` helper - tracked
+upstream in [spatie/laravel-typescript-transformer issue #TODO][2].
+Until then, the body-inspection approach is what makes the wrapper
+robust against Plain-routes-vs-`Route::localize()`-vs-`Route::translate()`
+without a hand-maintained registry.
 
 [1]: https://github.com/spatie/laravel-typescript-transformer/blob/main/src/TransformedProviders/LaravelRouteTransformedProvider.php
+[2]: https://github.com/spatie/laravel-typescript-transformer/issues/TODO
 
 ## Cross-locale URLs and SEO
 
