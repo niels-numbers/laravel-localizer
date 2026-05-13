@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Docs: "JavaScript Route Helpers" now covers `spatie/laravel-typescript-transformer`'s `LaravelRouteTransformedProvider` (v3+) alongside Ziggy and Wayfinder. Like Wayfinder, the transformer emits a static `route.ts` at build/watch time, so the variant pick happens client-side via a thin TS wrapper around the generated `route()`. The wrapper is the Ziggy-shaped DX (`route(name, params?, absolute?)`) but routed through `with_locale.*` / `without_locale.*` per the active locale. No package-shipped code needed - the helper lives in the consuming app.
+
 ## [1.3.0] - 2026-05-13
 
 ### Added
