@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-05-16
+
 ### Added
 
 - Docs: "JavaScript Route Helpers" now covers `spatie/laravel-typescript-transformer`'s `LaravelRouteTransformedProvider` (v3+) alongside Ziggy and Wayfinder. Like Wayfinder, the transformer emits a static `route.ts` at build/watch time, so the variant pick happens client-side via a thin TS wrapper around the generated `route()`. The wrapper is the Ziggy-shaped DX (`route(name, params?, absolute?)`) but routed through `with_locale.*` / `without_locale.*` per the active locale. No package-shipped code needed - the helper lives in the consuming app.
+
+### Fixed
+
+- `Route::localize()`'s `{locale}` where-pattern uses per-letter character classes (`[Ee][Nn]|[Dd][Ee]|...`) instead of the PCRE-only inline `(?i)` flag. Case-insensitive matching on the PHP side is unchanged, but the pattern is now valid JavaScript regex syntax. Ziggy ships where-constraints verbatim into `new RegExp("(?<locale>...)")` in the browser; the old `(?i)` prefix made Firefox bail out with "invalid regexp group" and broke any page that called `route(...)`. Strict engines (Firefox) now compile the constraint successfully and the Ziggy-backed `route()` helper works regardless of caller locale casing.
 
 ## [1.3.0] - 2026-05-13
 
