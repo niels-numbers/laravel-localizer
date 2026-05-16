@@ -119,8 +119,10 @@ class LocalizeMacroTest extends TestCase
 
         $with = Route::getRoutes()->getByName('with_locale.about');
 
-        // (?i) makes the constraint case-insensitive, so /EN/about still
-        // matches the route and RedirectLocale can canonicalize the case.
-        $this->assertSame('(?i)en|de|fr', $with->wheres['locale'] ?? null);
+        // Per-letter char classes give case-insensitive matching that works
+        // in both PCRE (PHP) and JS (Ziggy ships this verbatim to the
+        // browser). A wrong-case prefix like /EN/about still matches the
+        // route and reaches RedirectLocale.
+        $this->assertSame('[Ee][Nn]|[Dd][Ee]|[Ff][Rr]', $with->wheres['locale'] ?? null);
     }
 }
