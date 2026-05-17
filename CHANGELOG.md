@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-05-17
+
+### Added
+
+- `LocalizerBladeRouteGeneratorV2`: Ziggy v2 counterpart to `LocalizerBladeRouteGeneratorV1`, needed when rendering Ziggy via the `@routes` Blade directive. `BladeRouteGenerator::generate()` calls `new Ziggy(...)` directly and bypasses the container, so the `Ziggy::class` binding alone never reaches `@routes`. Bind `Tighten\Ziggy\BladeRouteGenerator::class -> LocalizerBladeRouteGeneratorV2::class` in `AppServiceProvider::register()`. The `Ziggy::class` binding stays required for callers that resolve `app(Ziggy::class)` directly (e.g. Inertia shared props).
+
+### Changed
+
+- Docs: "JavaScript Route Helpers" Ziggy v2 wiring now points at the `BladeRouteGenerator` binding; the `Ziggy::class` binding moved to `inertia-spa-language-switch.md` as the container-resolved-consumer case.
+
 ## [1.3.1] - 2026-05-16
 
 ### Added

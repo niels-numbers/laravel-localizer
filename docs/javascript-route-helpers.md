@@ -22,15 +22,12 @@ line that matches your Ziggy version (`composer show | grep ziggy`):
 
 ```php
 $this->app->bind(
-    \Tighten\Ziggy\Ziggy::class,
-    \NielsNumbers\LaravelLocalizer\Routing\LocalizerZiggyV2::class,
+    \Tighten\Ziggy\BladeRouteGenerator::class,
+    \NielsNumbers\LaravelLocalizer\Routing\LocalizerBladeRouteGeneratorV2::class,
 );
 ```
 
 ### `tightenco/ziggy` v1
-
-v1 instantiates Ziggy directly inside its `BladeRouteGenerator`,
-bypassing the container. The generator itself has to be replaced:
 
 ```php
 $this->app->bind(
@@ -45,8 +42,8 @@ After binding, `@routes` in your Blade root view ships a locale-aware
 manifest. Sanity check from `php artisan tinker`:
 
 ```php
-// v2+: NielsNumbers\LaravelLocalizer\Routing\LocalizerZiggyV2
-get_class(app(\Tighten\Ziggy\Ziggy::class));
+// v2+: NielsNumbers\LaravelLocalizer\Routing\LocalizerBladeRouteGeneratorV2
+get_class(app(\Tighten\Ziggy\BladeRouteGenerator::class));
 
 // v1:  NielsNumbers\LaravelLocalizer\Routing\LocalizerBladeRouteGeneratorV1
 get_class(app(\Tightenco\Ziggy\BladeRouteGenerator::class));

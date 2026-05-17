@@ -31,6 +31,20 @@ paths). The frontend needs to see a fresh table on every visit.
 **Fix:** Ship Ziggy as an Inertia shared prop instead of reading it from
 the HTML head.
 
+This pattern resolves `Ziggy` through the container, so the
+`BladeRouteGenerator` binding from the
+[JavaScript Route Helpers](/javascript-route-helpers) page does not
+reach it - that binding only swaps the generator that `@routes` calls.
+For container-resolved consumers you additionally need:
+
+```php
+// app/Providers/AppServiceProvider.php
+$this->app->bind(
+    \Tighten\Ziggy\Ziggy::class,
+    \NielsNumbers\LaravelLocalizer\Routing\LocalizerZiggyV2::class,
+);
+```
+
 ```php
 // app/Http/Middleware/HandleInertiaRequests.php
 use Tighten\Ziggy\Ziggy;
@@ -44,13 +58,12 @@ public function share(Request $request): array
 }
 ```
 
-With the container binding `Ziggy::class -> LocalizerZiggy::class` (see
-the [JavaScript Route Helpers](/javascript-route-helpers) page for the
-adapter), the closure produces the locale-correct route table on every
-visit.
+The closure now produces the locale-correct route table on every visit.
 
-You can drop `@routes` from the HTML root template - the shared prop takes
-over.
+You can drop `@routes` from the HTML root template - the shared prop
+takes over. If you drop `@routes`, the `BladeRouteGenerator` binding
+is no longer needed either; the `Ziggy::class` binding above stands
+alone.
 
 ## 2. Make `route()` reactive to `usePage()`
 

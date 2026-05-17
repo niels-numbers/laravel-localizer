@@ -16,6 +16,7 @@ parameters:
         - src/Routing/LocalizerZiggyV1.php
         - src/Routing/LocalizerZiggyV2.php
         - src/Routing/LocalizerBladeRouteGeneratorV1.php
+        - src/Routing/LocalizerBladeRouteGeneratorV2.php
         # The trait is only used by the Ziggy adapter shims above.
         # Without a visible using class PHPStan can't analyse it
         # properly (no `$this` context), so it follows them out.
