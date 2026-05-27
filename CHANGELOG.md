@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-05-27
+
+### Fixed
+
+- `composer.json`: register the `Localizer` facade alias via Laravel package auto-discovery. The service provider was already auto-discovered, but the alias was not, so the bare `Localizer::` syntax shown throughout the docs (template helpers, multi-tenancy, translated URL paths, etc.) failed with `Class "Localizer" not found` unless apps manually added the alias to `config/app.php`. Reported in #13.
+
 ## [1.3.2] - 2026-05-17
 
 ### Added

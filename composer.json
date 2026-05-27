@@ -53,7 +53,10 @@
         "laravel": {
             "providers": [
                 "NielsNumbers\\LaravelLocalizer\\ServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Localizer": "NielsNumbers\\LaravelLocalizer\\Facades\\Localizer"
+            }
         }
     },
     "config": {
