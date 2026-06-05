@@ -39,6 +39,58 @@ class LocalizeMacroTest extends TestCase
         $this->assertTrue($routes->contains('without_locale.test'));
     }
 
+    public function test_unnamed_route_stays_unnamed()
+    {
+        Route::localize(function () {
+            Route::get('/about', fn () => 'ok');
+        });
+        Route::getRoutes()->refreshNameLookups();
+
+        $names = collect(Route::getRoutes())->map->getName();
+
+        // No bare-prefix names leak onto the route.
+        $this->assertFalse($names->contains('with_locale.'));
+        $this->assertFalse($names->contains('without_locale.'));
+
+        // Both URL variants still exist, just nameless.
+        $uris = collect(Route::getRoutes())->map->uri();
+        $this->assertTrue($uris->contains('about'));
+        $this->assertTrue($uris->contains('{locale}/about'));
+    }
+
+    public function test_multiple_unnamed_routes_do_not_collide()
+    {
+        Route::localize(function () {
+            Route::get('/about', fn () => 'about');
+            Route::get('/contact', fn () => 'contact');
+        });
+        Route::getRoutes()->refreshNameLookups();
+
+        $uris = collect(Route::getRoutes())->map->uri();
+
+        // All four variants survive (would collapse if they shared a name).
+        $this->assertTrue($uris->contains('about'));
+        $this->assertTrue($uris->contains('contact'));
+        $this->assertTrue($uris->contains('{locale}/about'));
+        $this->assertTrue($uris->contains('{locale}/contact'));
+    }
+
+    public function test_named_routes_still_get_prefixed_alongside_unnamed_ones()
+    {
+        Route::localize(function () {
+            Route::get('/about', fn () => 'ok');
+            Route::get('/contact', fn () => 'ok')->name('contact');
+        });
+        Route::getRoutes()->refreshNameLookups();
+
+        $this->assertNotNull(Route::getRoutes()->getByName('with_locale.contact'));
+        $this->assertNotNull(Route::getRoutes()->getByName('without_locale.contact'));
+
+        $names = collect(Route::getRoutes())->map->getName();
+        $this->assertFalse($names->contains('with_locale.'));
+        $this->assertFalse($names->contains('without_locale.'));
+    }
+
     public function test_inner_middleware_group_propagates_into_localized_routes()
     {
         Route::localize(function () {

@@ -6,10 +6,12 @@ namespace NielsNumbers\LaravelLocalizer\Macros;
 
 use Closure;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Route;
+use NielsNumbers\LaravelLocalizer\Routing\Concerns\RegistersLocaleRouteGroups;
 
 class LocalizeMacro
 {
+    use RegistersLocaleRouteGroups;
+
     public function register(Closure $closure): void
     {
         $attributes = [
@@ -39,9 +41,9 @@ class LocalizeMacro
             ? implode('|', array_map(fn ($l) => self::caseInsensitivePattern($l), $supported))
             : '(?!)'];
 
-        Route::group($attributes, $closure);
+        $this->groupKeepingUnnamedRoutesUnnamed($attributes, $closure);
 
-        Route::group([
+        $this->groupKeepingUnnamedRoutesUnnamed([
             'as' => 'without_locale.',
             'locale_type' => 'without_locale',
         ], $closure);
