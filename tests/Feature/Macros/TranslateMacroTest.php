@@ -7,6 +7,7 @@ namespace NielsNumbers\LaravelLocalizer\Tests\Feature\Macros;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use NielsNumbers\LaravelLocalizer\Exceptions\UnnamedTranslatedRouteException;
 use NielsNumbers\LaravelLocalizer\Facades\Localizer;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use Orchestra\Testbench\TestCase;
@@ -40,6 +41,24 @@ class TranslateMacroTest extends TestCase
         $this->assertTrue($routes->contains('translated_en.about'));
         $this->assertTrue($routes->contains('translated_de.about'));
         $this->assertTrue($routes->contains('without_locale.about'));
+    }
+
+    public function test_unnamed_route_throws()
+    {
+        $this->expectException(UnnamedTranslatedRouteException::class);
+
+        Route::translate(function () {
+            Route::get('about', fn () => 'ok');
+        });
+    }
+
+    public function test_unnamed_route_error_names_the_offending_uri()
+    {
+        $this->expectExceptionMessageMatches('/about/');
+
+        Route::translate(function () {
+            Route::get('about', fn () => 'ok');
+        });
     }
 
     public function test_restores_locale_after_registration()

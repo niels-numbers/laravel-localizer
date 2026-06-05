@@ -6,14 +6,15 @@ namespace NielsNumbers\LaravelLocalizer\Macros;
 
 use Closure;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Traits\Localizable;
 use NielsNumbers\LaravelLocalizer\Facades\Localizer;
+use NielsNumbers\LaravelLocalizer\Routing\Concerns\RegistersLocaleRouteGroups;
 use NielsNumbers\LaravelLocalizer\Services\UriTranslator;
 
 class TranslateMacro
 {
     use Localizable;
+    use RegistersLocaleRouteGroups;
 
     public function __construct(
         protected UriTranslator $translator
@@ -48,7 +49,7 @@ class TranslateMacro
 
         foreach ($supported as $locale) {
             $this->withLocale($locale, function () use ($routes, $locale, $default, $hide) {
-                Route::group([
+                $this->groupRequiringNamedRoutes([
                     'prefix' => $locale,
                     'as' => "translated_$locale.",
                     'locale' => $locale,
@@ -60,7 +61,7 @@ class TranslateMacro
                 // collision with the LocalizeMacro's own without-locale
                 // routes.
                 if ($locale === $default && $hide) {
-                    Route::group([
+                    $this->groupRequiringNamedRoutes([
                         'as' => 'without_locale.',
                         'locale' => $locale,
                         // 'translated' (not 'without_locale'): the URI here

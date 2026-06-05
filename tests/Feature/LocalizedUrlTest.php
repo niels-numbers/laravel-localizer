@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 use LogicException;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
+use NielsNumbers\LaravelLocalizer\Exceptions\UnnamedTranslatedRouteException;
 use NielsNumbers\LaravelLocalizer\Facades\Localizer;
 use NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale;
 use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
@@ -95,24 +96,19 @@ class LocalizedUrlTest extends TestCase
         $response->assertSee('/de/ueber');
     }
 
-    public function test_unnamed_translated_route_throws()
+    public function test_unnamed_translated_route_throws_at_registration()
     {
         Lang::addLines(['routes.about' => 'ueber'], 'de');
         Lang::addLines(['routes.about' => 'about'], 'en');
 
-        Route::middleware(SetLocale::class)->group(function () {
-            Route::translate(function () {
-                Route::get(Localizer::url('about'), function () {
-                    return Route::localizedUrl('de', false);
-                });
-            });
+        // A translated route without a name can never be language-switched
+        // (its URIs are locale-specific, only the shared name links them), so
+        // registration fails fast instead of blowing up later at switch time.
+        $this->expectException(UnnamedTranslatedRouteException::class);
+
+        Route::translate(function () {
+            Route::get(Localizer::url('about'), fn () => 'ok');
         });
-
-        $this->withoutExceptionHandling();
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('unnamed translated route');
-
-        $this->get('/about');
     }
 
     public function test_unnamed_localize_route_falls_back_to_uri_prefix_swap()

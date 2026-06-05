@@ -12,6 +12,15 @@ Route::translate(function () {
 });
 ```
 
+::: danger Every translated route must have a name
+Always add `->name()` to a route inside `Route::translate()`. Translated
+routes have locale-specific URIs (`/about` vs. `/ueber`), so the language
+switch (`Route::localizedUrl()`) relies on the shared route name to find
+the equivalent URL in another locale - there is no way to recover it from
+the URI alone. A nameless translated route therefore throws an
+`UnnamedTranslatedRouteException` at registration.
+:::
+
 Define the translations in `lang/{locale}/routes.php`:
 
 ```php
