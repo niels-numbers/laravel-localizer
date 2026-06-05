@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-06-05
+
+### Added
+
+- `Route::translate()` now requires every route inside it to be named and throws `UnnamedTranslatedRouteException` at registration when one isn't. Translated routes have locale-specific URIs (`/about` vs. `/ueber`), so `Route::localizedUrl()` relies on the shared route name to resolve the equivalent URL in another locale - a nameless translated route can never be language-switched. Previously such a route registered fine and only failed later, at switch time, inside `Route::localizedUrl()`; it now fails fast at boot with a message naming the offending URI.
+
+### Changed
+
+- Unnamed routes inside `Route::localize()` now stay unnamed instead of inheriting the bare group prefix as their name. Laravel applies the `with_locale.` / `without_locale.` group `as` to every route in the group, so a route registered without `->name()` previously ended up named literally `with_locale.` - and multiple unnamed routes collapsed onto that single name, dropping all but the first from the name lookup. They are now left nameless: still reachable by URL, absent from the name lookup, matching how a plain unnamed route behaves.
+- Docs: the `spatie/laravel-typescript-transformer` integration in "JavaScript Route Helpers" is marked as currently incompatible and the wrapper recipe removed (reverting the recipe added in 1.3.1). The generator (`ResolveRouteCollectionAction`) indexes routes by controller class/method rather than by name, so `Route::localize()`'s double-registered variants overwrite each other and the `with_locale.*` names never reach the generated manifest. This is a generator limitation, not a localizer bug - `route:list` is complete and correct; Ziggy stays the working JS adapter.
+
 ## [1.3.3] - 2026-05-27
 
 ### Fixed
