@@ -11,7 +11,7 @@ the server.
 |---|---|---|
 | **Ziggy** | `route('about')`, unchanged | One container binding |
 | **Wayfinder** | `localizedRoute('about')` | TS helper module |
-| **spatie/laravel-typescript-transformer** | `route('about')` from your wrapper | TS helper module |
+| **spatie/laravel-typescript-transformer** | Not currently compatible ([why](#spatie-laravel-typescript-transformer)) | - |
 
 ## Ziggy
 
@@ -123,113 +123,25 @@ locale; same pattern.
 
 ## spatie/laravel-typescript-transformer
 
-`LaravelRouteTransformedProvider` (v3+) generates a typed `route()`
-helper as a static `.ts` file at build/watch time, with the same call
-shape as Ziggy (`route(name, params?, absolute?)`). Because the file is
-emitted ahead of time, there's no per-request hook to intercept the way
-the Ziggy adapter does - the locale-aware variant pick has to happen
-client-side. The wrapper mirrors the server-side resolver in
-`Illuminate\Routing\UrlGenerator` one-to-one: probe each candidate name
-against the manifest, take the first that exists.
+::: danger Not currently compatible
+The locale-aware wrapper cannot work with `spatie/laravel-typescript-transformer`
+(v3) today. Its generator (`ResolveRouteCollectionAction`) indexes routes by
+controller class - or `[class][method]` - not by route name. Because
+`Route::localize()` registers each route twice (a `with_locale.` and a
+`without_locale.` variant) on the same controller and method, the second
+registration overwrites the first in the generated manifest: only one variant
+survives, so the `with_locale.*` names the wrapper would need are never
+emitted. (Plain `Route::inertia()` already collapses for the same reason - all
+Inertia routes share `\Inertia\Controller`.)
 
-The generator emits the `routes` lookup object but doesn't export it
-([source][1]), so the wrapper detects existence by inspecting the
-return value: a name that isn't in the manifest produces `/undefined`
-(or `<origin>/undefined` for absolute URLs), because the generated body
-does `'/' + routes[name]`. That's a working primitive today; for a
-forward-compatible note see ["Caveats"](#caveats) below.
+This is a generator limitation, not a localizer bug: Laravel's own
+`route:list` is complete and correct, only the generated TypeScript file is
+missing routes. A proper fix requires the generator to key by route name.
+Tracked upstream in [spatie/laravel-typescript-transformer#87](https://github.com/spatie/laravel-typescript-transformer/issues/87).
 
-```ts
-// resources/js/route.ts
-import { route as baseRoute } from '@/helpers/route';
-
-const DEFAULT_LOCALE = 'en';   // mirror config('app.fallback_locale')
-const HIDE_DEFAULT   = true;   // mirror localizer.hide_default_locale
-
-// Use whatever locale source you have. With Inertia, share it from the
-// server: HandleInertiaRequests::share() returns ['locale' => app()->getLocale()]
-// and you read usePage().props.locale here.
-function currentLocale(): string {
-    return document.documentElement.lang || DEFAULT_LOCALE;
-}
-
-// Recover the route-name union from the exported function signature,
-// since `RouteParameters` isn't exported.
-type RouteName = Parameters<typeof baseRoute>[0];
-
-// "Does this route name exist in the manifest?" by inspecting the
-// generated body's '/' + routes[name] miss behavior.
-function exists(name: string): boolean {
-    return baseRoute(name as RouteName, {} as any, false) !== '/undefined';
-}
-
-export function route(
-    name: string,
-    parameters: Record<string, any> = {},
-    absolute: boolean = true,
-): string {
-    const { locale = currentLocale(), ...rest } = parameters;
-
-    // 1. Exact match - plain Laravel routes registered outside the
-    //    locale macros (admin.dashboard, api.health, etc.).
-    if (exists(name)) {
-        return baseRoute(name as RouteName, parameters as any, absolute);
-    }
-
-    // 2. hide_default branch - drop the prefix when both target and
-    //    current app are in the default locale and there's an
-    //    unprefixed variant registered.
-    const withoutN = `without_locale.${name}`;
-    if (HIDE_DEFAULT && locale === DEFAULT_LOCALE && exists(withoutN)) {
-        return baseRoute(withoutN as RouteName, rest as any, absolute);
-    }
-
-    // 3. Route::localize() variant.
-    const withN = `with_locale.${name}`;
-    if (exists(withN)) {
-        return baseRoute(withN as RouteName, { ...rest, locale } as any, absolute);
-    }
-
-    // 4. Route::translate() variant - locale baked into the URI, no
-    //    locale parameter.
-    const translatedN = `translated_${locale}.${name}`;
-    if (exists(translatedN)) {
-        return baseRoute(translatedN as RouteName, rest as any, absolute);
-    }
-
-    throw new Error(`Route "${name}" not found for locale "${locale}"`);
-}
-```
-
-Usage matches Laravel's server-side `route()` one-to-one - just import
-from the wrapper instead of `@/helpers/route` directly:
-
-```ts
-import { route } from '@/route';
-
-route('about');                   // 'https://app.test/de/about' (current = de, Route::localize())
-route('about', { locale: 'fr' }); // 'https://app.test/fr/about'
-route('about', { locale: 'en' }); // 'https://app.test/about'   (= default, hide_default)
-route('about', {}, false);        // '/de/about' (relative)
-route('admin.dashboard');         // 'https://app.test/admin/dashboard' (plain route, no prefix)
-route('contact');                 // 'https://app.test/kontakt'  (Route::translate(['en' => 'contact', 'de' => 'kontakt']))
-```
-
-### Caveats
-
-The `'/undefined'` detection depends on the body of the generated
-`route()`. As of `spatie/laravel-typescript-transformer` v3, a miss
-produces `'/' + undefined` and the function returns; if a future release
-throws or returns `''` instead, the `exists()` helper here will need a
-one-line adjustment. The cleaner long-term fix is for the generator to
-export `routes` or emit a dedicated `routeExists()` helper - tracked
-upstream in [spatie/typescript-transformer discussion #151][2]. Until
-then, the body-inspection approach is what makes the wrapper robust
-against Plain-routes-vs-`Route::localize()`-vs-`Route::translate()`
-without a hand-maintained registry.
-
-[1]: https://github.com/spatie/laravel-typescript-transformer/blob/main/src/TransformedProviders/LaravelRouteTransformedProvider.php
-[2]: https://github.com/spatie/typescript-transformer/discussions/151
+Until then, use the [Ziggy](#ziggy) adapter - it iterates the route collection
+directly and keeps every variant.
+:::
 
 ## Cross-locale URLs and SEO
 
