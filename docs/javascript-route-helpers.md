@@ -27,6 +27,13 @@ $this->app->bind(
 );
 ```
 
+> **Vite alias note.** If your app aliases `'ziggy-js'` to a file inside
+> the Composer-vendored Ziggy package (instead of installing the npm
+> package), the v2 `dist/` layout no longer ships `vue.es.js`. Point the
+> alias at `vendor/tightenco/ziggy/dist/index.esm.js` - that bundle
+> exports `ZiggyVue`, `route`, and `useRoute`. The old v1 file was
+> `vendor/tightenco/ziggy/dist/vue.es.js`.
+
 ### `tightenco/ziggy` v1
 
 ```php
