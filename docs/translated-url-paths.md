@@ -48,6 +48,31 @@ Once per supported locale, plus an additional time for the
 `Route::localize()`.
 :::
 
+## Translating a prefix
+
+`Localizer::url()` isn't limited to a full route URI - it translates
+whatever string you pass it, so it works on a `Route::prefix()` segment
+too:
+
+```php
+Route::translate(function () {
+    Route::prefix(Localizer::url('administrator'))->group(function () {
+        Route::get('dashboard', DashboardController::class)->name('admin.dashboard');
+    });
+});
+```
+
+```php
+// lang/fr/routes.php
+return ['administrator' => 'administrateur'];
+```
+
+Produces `/en/administrator/dashboard`, `/fr/administrateur/dashboard`,
+and `/administrator/dashboard` for the default locale. The locale prefix
+added by `Route::translate()` (`/fr`) and the translated prefix
+(`administrateur`) simply stack, like any nested `Route::prefix()`
+groups.
+
 ## Multi-tenant caveat
 
 `Route::translate()` does not work correctly when tenants have
