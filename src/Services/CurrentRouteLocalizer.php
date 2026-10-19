@@ -50,6 +50,10 @@ class CurrentRouteLocalizer
         $name = $current->getName();
         $baseName = $this->localizer->baseName($name);
 
+        if ($this->isGeneratedName($baseName)) {
+            $baseName = null;
+        }
+
         return $this->withLocale($locale, function () use ($current, $name, $baseName, $locale, $absolute, $forcePrefix) {
             if ($baseName !== '' && $baseName !== null) {
                 return $this->localizeNamedRoute($current, $name, $baseName, $locale, $absolute, $forcePrefix);
@@ -69,6 +73,17 @@ class CurrentRouteLocalizer
                 .'Add ->name() inside Route::translate() so the helper can resolve the URL.'
             );
         });
+    }
+
+    /**
+     * `route:cache` names every nameless route `generated::<random>`, so the
+     * two variants of an unnamed Route::localize() route get unrelated names
+     * and a name lookup can never find the sibling. Treat such a route as
+     * unnamed so it takes the URI prefix swap, exactly like it does uncached.
+     */
+    protected function isGeneratedName(?string $baseName): bool
+    {
+        return $baseName !== null && str_starts_with($baseName, 'generated::');
     }
 
     protected function localizeNamedRoute(RouteInstance $current, ?string $name, string $baseName, string $locale, bool $absolute, bool $forcePrefix = false): string

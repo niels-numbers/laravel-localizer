@@ -28,6 +28,10 @@ prefixed form. See [Language Switcher](/language-switcher).
 | Unnamed `Route::translate()` | Resolved through `route()`.|
 | Outside a request | Throws `LogicException`.               |
 
+Routes that are nameless in your code stay "unnamed" here even with
+`route:cache`: Laravel assigns them a `generated::<random>` name when
+caching, and the package treats such names as no name at all.
+
 The current request's query string is preserved on the localized URL,
 so pagination and filter URLs like `/posts?page=2&sort=name` keep the
 user on the same page after a locale switch. Route defaults set by

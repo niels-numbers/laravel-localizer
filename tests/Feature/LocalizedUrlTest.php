@@ -139,6 +139,38 @@ class LocalizedUrlTest extends TestCase
         $response->assertSeeText('/de/about?ref=newsletter');
     }
 
+    public function test_unnamed_localize_route_swaps_prefix_when_routes_are_cached()
+    {
+        Route::middleware(SetLocale::class)->group(function () {
+            Route::localize(function () {
+                Route::get('/about', static fn () => Route::localizedUrl('de', false));
+            });
+        });
+
+        $this->cacheRoutes();
+
+        $response = $this->get('/about');
+
+        $response->assertOk();
+        $this->assertSame('/de/about', $response->getContent());
+    }
+
+    public function test_switcher_url_unnamed_localize_route_keeps_prefix_when_routes_are_cached()
+    {
+        Route::middleware(SetLocale::class)->group(function () {
+            Route::localize(function () {
+                Route::get('/about', static fn () => Route::localizedSwitcherUrl('en', false));
+            });
+        });
+
+        $this->cacheRoutes();
+
+        $response = $this->get('/de/about');
+
+        $response->assertOk();
+        $this->assertSame('/en/about', $response->getContent());
+    }
+
     public function test_throws_when_called_outside_request_context()
     {
         $this->expectException(LogicException::class);
@@ -296,5 +328,15 @@ class LocalizedUrlTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('/de/posts?page=2&sort=name', false);
+    }
+
+    /**
+     * Mimic `route:cache`: compile the collection (which names every nameless
+     * route `generated::<random>`) and swap it in, like the cache file does.
+     */
+    private function cacheRoutes(): void
+    {
+        $router = $this->app['router'];
+        $router->setCompiledRoutes($router->getRoutes()->compile());
     }
 }
