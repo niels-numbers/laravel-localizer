@@ -24,11 +24,11 @@ codebase whose original architecture comes with limitations that
 motivated this rewrite - see
 [Why migrate](/migrating-from-laravel-localization#why-migrate).
 
-### [`codezero-be/laravel-localized-routes`](https://github.com/codezero-be/laravel-localized-routes) (deprecated)
+### [`codezero-be/laravel-localized-routes`](https://github.com/codezero-be/laravel-localized-routes) (unmaintained)
 
-Route-per-locale (Nx routes per definition). No longer maintained, but
-its design ideas influenced this one - here only two routes per
-definition.
+Route-per-locale (N routes per definition). No longer maintained and
+doesn't support Laravel 12+, but its design ideas influenced this
+package - here with only two routes per definition.
 
 ### [`spatie/laravel-translatable`](https://github.com/spatie/laravel-translatable)
 
@@ -75,7 +75,8 @@ Releasing that as a new major version would have forced every existing user into
   [mcamara/laravel-localization#921](https://github.com/mcamara/laravel-localization/issues/921)
   was the motivation for writing this package.
 
-Since [@codezero-be](https://github.com/codezero-be) is no longer with
-us, I want to acknowledge his great work and influence on this package.
+Since Ivan Vermeyen ([@codezero-be](https://github.com/codezero-be)) is
+no longer with us, I want to acknowledge his great work and influence
+on this package.
 Many of his ideas live on here, and I hope this helps to keep his
 contributions useful to the Laravel community for years to come.

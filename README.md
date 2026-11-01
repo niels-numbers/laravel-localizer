@@ -88,7 +88,7 @@ and `spatie/laravel-translatable`.
 MIT licensed. Created by Adam Nielsen, building on prior work by
 [@mcamara](https://github.com/mcamara) (original
 `laravel-localization`),
-[@codezero-be](https://github.com/codezero-be) (deprecated
+[@codezero-be](https://github.com/codezero-be) (unmaintained
 `laravel-localized-routes`, whose static-route ideas inspired this
 rewrite) and
 [@jordyvanderhaegen](https://github.com/jordyvanderhaegen) (current
