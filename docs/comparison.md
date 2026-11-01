@@ -54,7 +54,7 @@ This package takes the **middle path**: each route registered
 
 ## Why not a v3 of mcamara/laravel-localization?
 
-The first attempt was exactly that: refactoring the original package in place ([#934](https://github.com/mcamara/laravel-localization/pull/934)). It turned out the core problems - building URLs by parsing and reverse-mapping the request URI, and calling `setLocale()` while routes register - weren't bugs in isolated code paths but consequences of the architecture itself. Fixing them meant removing nearly all of the existing code.
+The first attempt was exactly that: refactoring the original package in place ([#934](https://github.com/mcamara/laravel-localization/pull/934)). It turned out the core problems - building URLs by parsing and reverse-mapping the request URI, and calling `setLocale()` while routes register - weren't bugs in isolated code paths but consequences of the architecture itself. Fixing them meant removing nearly all of the existing code. Starting fresh also meant leaving behind code that had accumulated changes since 2013 and had become hard to follow. Testing got simpler too: with static routes, the tests don't need to reboot the app per locale or switch locales through an environment variable, and they can compile routes the same way Laravel's own `route:cache` does.
 
 Releasing that as a new major version would have forced every existing user into a full migration, including the many apps where the current package works fine. A separate package keeps both paths open: `mcamara/laravel-localization` stays stable and maintained by [@jordyvanderhaegen](https://github.com/jordyvanderhaegen), and projects that need `route:cache`, reliable translated routes or Livewire support can migrate when it suits them.
 
