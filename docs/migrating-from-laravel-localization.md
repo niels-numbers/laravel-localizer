@@ -137,7 +137,7 @@ Replace the prefix + middleware wrapper with `Route::localize()`:
 ```php
 // Before
 Route::prefix(LaravelLocalization::setLocale())
-     ->middleware(['localizationRedirect', 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath'])
+     ->middleware(['localize', 'localizationRedirect', 'localeSessionRedirect', 'localeViewPath'])
      ->group(function () {
          Route::get('/about', AboutController::class)->name('about');
      });

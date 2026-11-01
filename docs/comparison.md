@@ -52,6 +52,12 @@ solved this with **static per-locale routes** (Nx per definition).
 This package takes the **middle path**: each route registered
 **twice** (one with `{locale}`, one without).
 
+## Why not a v3 of mcamara/laravel-localization?
+
+The first attempt was exactly that: refactoring the original package in place ([#934](https://github.com/mcamara/laravel-localization/pull/934)). It turned out the core problems - building URLs by parsing and reverse-mapping the request URI, and calling `setLocale()` while routes register - weren't bugs in isolated code paths but consequences of the architecture itself. Fixing them meant removing nearly all of the existing code.
+
+Releasing that as a new major version would have forced every existing user into a full migration, including the many apps where the current package works fine. A separate package keeps both paths open: `mcamara/laravel-localization` stays stable and maintained by [@jordyvanderhaegen](https://github.com/jordyvanderhaegen), and projects that need `route:cache`, reliable translated routes or Livewire support can migrate when it suits them.
+
 ## Credits
 
 - [@mcamara](https://github.com/mcamara): original creator of

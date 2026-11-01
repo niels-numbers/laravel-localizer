@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'Laravel Localizer',
-  description: 'Locale detection and localized URLs for Laravel - the official successor to mcamara/laravel-localization.',
+  description: 'Locale detection and localized URLs for Laravel - the recommended successor to mcamara/laravel-localization.',
 
   cleanUrls: true,
   lastUpdated: true,
