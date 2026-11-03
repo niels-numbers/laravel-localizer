@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-11-03
+
+### Fixed
+
+- Responses on unprefixed localized URLs (e.g. `/about`) now send `Vary: Accept-Language, Cookie`, both for the redirect to the visitor's locale and for the default-locale page. Without it, a cache or CDN could serve one visitor's redirect (or the default-locale page) to everyone. Prefixed URLs (`/de/about`) are unaffected.
+
+### Changed
+
+- Docs: new "SEO" section in "Redirects", and the `hreflang` example in "Template Helpers" now includes `x-default`.
+- Docs: "Comparison" adds `chinleung/laravel-multilingual-routes` and a table showing what `/about` does in each package, with and without a hidden default locale.
+
 ## [1.4.1] - 2026-10-19
 
 ### Fixed
