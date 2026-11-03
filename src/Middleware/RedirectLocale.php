@@ -79,10 +79,21 @@ class RedirectLocale
         //   - hide_default_locale is off (default locale must also show in URL,
         //     e.g. /about → /en/about so every URL has a locale segment)
         if (! $hasLocalePrefix && ($locale !== $default || ! $hideDefault)) {
-            return $this->redirectTo($request, $locale.'/'.$path);
+            return $this->varyByLanguage($this->redirectTo($request, $locale.'/'.$path));
         }
 
-        return $next($request);
+        $response = $next($request);
+
+        return $hasLocalePrefix ? $response : $this->varyByLanguage($response);
+    }
+
+    // Unprefixed URLs answer differently per detected locale (browser
+    // language, session, cookie), so caches must not share them.
+    protected function varyByLanguage(Response $response): Response
+    {
+        $response->setVary(['Accept-Language', 'Cookie'], false);
+
+        return $response;
     }
 
     protected function redirectTo(Request $request, string $path): Response

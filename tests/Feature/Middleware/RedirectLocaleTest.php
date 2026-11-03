@@ -69,6 +69,36 @@ class RedirectLocaleTest extends TestCase
         $response->assertRedirect('/de/about');
     }
 
+    public function test_redirect_from_unprefixed_url_varies_by_language()
+    {
+        App::setLocale('de');
+
+        $response = $this->get('/about');
+
+        $response->assertRedirect('/de/about');
+        $this->assertSame(['Accept-Language', 'Cookie'], $response->getVary());
+    }
+
+    public function test_page_on_unprefixed_url_varies_by_language()
+    {
+        App::setLocale('en');
+
+        $response = $this->get('/about');
+
+        $response->assertOk();
+        $this->assertSame(['Accept-Language', 'Cookie'], $response->getVary());
+    }
+
+    public function test_prefixed_url_does_not_vary_by_language()
+    {
+        App::setLocale('de');
+
+        $response = $this->get('/de/about');
+
+        $response->assertOk();
+        $this->assertSame([], $response->getVary());
+    }
+
     public function test_no_redirect_when_disabled()
     {
         App::setLocale('en');
