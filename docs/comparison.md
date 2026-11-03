@@ -67,6 +67,10 @@ register. On the console there is no request, so `route:list` only
 shows the unprefixed routes - `/de/about`, `/fr/contact` etc. exist at
 runtime but don't appear in the list.
 
+This is also why Laravel's native `route:cache` doesn't work: it caches
+exactly this console view, so all prefixed routes are missing. The
+package ships its own `route:trans:cache` command as a workaround.
+
 #### codezero-be/laravel-localized-routes
 
 ```
