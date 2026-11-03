@@ -80,5 +80,5 @@ the differences step by step.
 
 Not sure you need this package at all? See
 [when to use it and how it compares](/comparison) to
-`mcamara/laravel-localization`, `codezero-be/laravel-localized-routes`
-and `spatie/laravel-translatable`.
+`mcamara/laravel-localization`, `codezero-be/laravel-localized-routes`,
+`chinleung/laravel-multilingual-routes` and `spatie/laravel-translatable`.

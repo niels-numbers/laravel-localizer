@@ -25,6 +25,23 @@ matched route handler runs on whatever URL the client actually hit
 (`with_locale` or `without_locale` variant); both register the same
 controller, so behavior is identical bar the URL itself.
 
+## SEO
+
+Redirecting `/about` based on the visitor's language is safe for search
+engines:
+
+- Googlebot usually crawls without `Accept-Language` and cookies, so it
+  gets the default locale on `/about` and is not redirected.
+- Prefixed URLs like `/de/about` are never redirected away, so every
+  language version has a stable, crawlable URL.
+- Redirects use `302`, so search engines don't treat `/about` as moved.
+- Responses carry `Vary: Accept-Language, Cookie`, so caches and CDNs
+  don't serve one visitor's redirect (or page) to another.
+
+Add `hreflang` tags so search engines find all language versions, with
+`x-default` on the unprefixed URL. See
+[Template Helpers](/template-helpers#route-localizedurl-locale-absolute-true).
+
 ## Disabling redirects
 
 ```php

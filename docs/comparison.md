@@ -29,6 +29,22 @@ motivated this rewrite - see
 Static route-per-locale approach. No longer maintained and doesn't
 support Laravel 12+, but its design ideas influenced this package.
 
+### [`chinleung/laravel-multilingual-routes`](https://github.com/chinleung/laravel-multilingual-routes)
+
+Static route-per-locale approach via `Route::multilingual()`, with
+translated paths from `lang/{locale}/routes.php`. The middleware only
+reads the locale from the first URL segment - no browser/session
+detection or redirects to the visitor's language. A good fit if the URL
+alone should decide the language.
+
+**`route()` doesn't work for localized routes.** Route names carry the
+locale (`en.about`, `de.about`), so `route('about')` throws a
+`RouteNotFoundException`. Every URL needs `localized_route('about')` or
+an explicit `route('de.about')` - including `redirect()->route()`,
+`to_route()`, signed URLs and route names used by third-party packages.
+The same applies in JS with Ziggy or Wayfinder, which only see the
+locale-prefixed names.
+
 ### [`spatie/laravel-translatable`](https://github.com/spatie/laravel-translatable)
 
 Translates **Eloquent model fields**, not routes. Works alongside this
@@ -67,6 +83,23 @@ GET|HEAD  es/contact ....................................... es.contact
 Every locale gets its own copy of every route: 2 routes x 4 locales =
 8 routes. Each new locale adds another full set.
 
+#### chinleung/laravel-multilingual-routes
+
+```
+GET|HEAD  about .............................................. en.about
+GET|HEAD  de/about ........................................... de.about
+GET|HEAD  fr/about ........................................... fr.about
+GET|HEAD  es/about ........................................... es.about
+GET|HEAD  contact .......................................... en.contact
+GET|HEAD  de/contact ....................................... de.contact
+GET|HEAD  fr/contact ....................................... fr.contact
+GET|HEAD  es/contact ....................................... es.contact
+```
+
+Also one copy per locale, but the default locale has no prefix by
+default. With translations in `lang/{locale}/routes.php` the URIs
+differ per locale (`de/ueber`).
+
 #### laravel-localizer (this package)
 
 ```
@@ -86,6 +119,45 @@ You never pass `{locale}` yourself: the middleware sets it via
 recommended by Laravel, so `route('about')` just works. It is also
 removed from the route parameters, so controllers don't receive it as an
 argument.
+
+### What `/about` does
+
+Default locale `en`. Every package has a global switch for whether the
+default locale gets a URL prefix:
+
+| Package | Setting |
+|---|---|
+| mcamara/laravel-localization | `hideDefaultLocaleInURL` |
+| codezero-be/laravel-localized-routes | `omitted_locale` |
+| chinleung/laravel-multilingual-routes | `prefix_default` (inverted) |
+| laravel-localizer (this package) | `hide_default_locale` |
+
+**Mode A: default locale without prefix** (`/about` is the English page)
+
+| Package | English visitor opens `/about` | German visitor opens `/about` |
+|---|---|---|
+| mcamara | English page | Redirect to `/de/about`¹ |
+| codezero | English page | English page |
+| chinleung | English page | English page |
+| laravel-localizer | English page | Redirect to `/de/about` |
+
+**Mode B: every locale prefixed** (`/en/about`, `/de/about`)
+
+| Package | English visitor opens `/about` | German visitor opens `/about` |
+|---|---|---|
+| mcamara | Redirect to `/en/about`¹ | Redirect to `/de/about`¹ |
+| codezero | Redirect to `/en/about`² | Redirect to `/de/about`² |
+| chinleung | 404, or redirect to `/en/about`³ | 404, or redirect to `/en/about`³ |
+| laravel-localizer | Redirect to `/en/about` | Redirect to `/de/about` |
+
+¹ Requires `LocaleSessionRedirect` (or `LocaleCookieRedirect`) and
+`useAcceptLanguageHeader`.<br>
+² Requires `redirect_to_localized_urls` and the fallback route.<br>
+³ With `redirect_unprefixed`. There is no locale detection, so every
+visitor goes to the default locale.
+
+In mode A, codezero and chinleung can't send a German visitor from
+`/about` to `/de/about`: `/about` is always the English page.
 
 ## Background
 

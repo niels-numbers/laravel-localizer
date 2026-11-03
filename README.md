@@ -80,8 +80,8 @@ covers the differences step by step.
 
 Not sure you need this package at all? See
 [when to use it and how it compares](https://localizer.adam-nielsen.de/comparison)
-to `mcamara/laravel-localization`, `codezero-be/laravel-localized-routes`
-and `spatie/laravel-translatable`.
+to `mcamara/laravel-localization`, `codezero-be/laravel-localized-routes`,
+`chinleung/laravel-multilingual-routes` and `spatie/laravel-translatable`.
 
 ## License & credits
 

@@ -15,7 +15,14 @@ The current request's URL in another locale, in **canonical** form
           hreflang="{{ $locale }}"
           href="{{ Route::localizedUrl($locale) }}" />
 @endforeach
+<link rel="alternate"
+      hreflang="x-default"
+      href="{{ Route::localizedUrl(Localizer::defaultLocale()) }}" />
 ```
+
+`x-default` points to the unprefixed URL (`/about`), which serves the
+default locale or redirects visitors to their language. See
+[Redirects: SEO](/redirects#seo).
 
 For an in-page **language switcher**, use
 `Route::localizedSwitcherUrl($locale)` instead - it always emits the
