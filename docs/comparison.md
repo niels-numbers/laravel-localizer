@@ -26,14 +26,66 @@ motivated this rewrite - see
 
 ### [`codezero-be/laravel-localized-routes`](https://github.com/codezero-be/laravel-localized-routes) (unmaintained)
 
-Route-per-locale (N routes per definition). No longer maintained and
-doesn't support Laravel 12+, but its design ideas influenced this
-package - here with only two routes per definition.
+Static route-per-locale approach. No longer maintained and doesn't
+support Laravel 12+, but its design ideas influenced this package.
 
 ### [`spatie/laravel-translatable`](https://github.com/spatie/laravel-translatable)
 
 Translates **Eloquent model fields**, not routes. Works alongside this
 package for translatable slugs.
+
+### How the routes are registered
+
+The examples use two routes (`about` and `contact`) and four locales
+(`en`, `de`, `fr`, `es`), as shown by `php artisan route:list`.
+
+#### mcamara/laravel-localization
+
+```
+GET|HEAD  about ................................................ about
+GET|HEAD  contact ............................................ contact
+```
+
+The locale prefix is read from the current request while routes
+register. On the console there is no request, so `route:list` only
+shows the unprefixed routes - `/de/about`, `/fr/contact` etc. exist at
+runtime but don't appear in the list.
+
+#### codezero-be/laravel-localized-routes
+
+```
+GET|HEAD  en/about ........................................... en.about
+GET|HEAD  de/about ........................................... de.about
+GET|HEAD  fr/about ........................................... fr.about
+GET|HEAD  es/about ........................................... es.about
+GET|HEAD  en/contact ....................................... en.contact
+GET|HEAD  de/contact ....................................... de.contact
+GET|HEAD  fr/contact ....................................... fr.contact
+GET|HEAD  es/contact ....................................... es.contact
+```
+
+Every locale gets its own copy of every route: 2 routes x 4 locales =
+8 routes. Each new locale adds another full set.
+
+#### laravel-localizer (this package)
+
+```
+GET|HEAD  about ...................................... without_locale.about
+GET|HEAD  contact .................................. without_locale.contact
+GET|HEAD  {locale}/about ................................ with_locale.about
+GET|HEAD  {locale}/contact ............................ with_locale.contact
+```
+
+Each route is registered **twice**, regardless of how many locales you
+support: 2 routes x 2 = 4 routes, also with 10 locales. The locale is a regular `{locale}` placeholder. The second,
+unprefixed route is needed because a route placeholder can't be empty,
+so `/about` can't be matched by `{locale}/about`.
+
+You never pass `{locale}` yourself: the middleware sets it via
+[`URL::defaults()`](https://laravel.com/docs/urls#default-values), as
+recommended by Laravel, so `route('about')` just works. It is also
+removed from the route parameters, so controllers don't receive it as an
+argument.
 
 ## Background
 
@@ -48,9 +100,9 @@ runtime route generation.
 The original generated **dynamic routes** (cache + compatibility
 issues).
 [laravel-localized-routes](https://github.com/codezero-be/laravel-localized-routes)
-solved this with **static per-locale routes** (Nx per definition).
-This package takes the **middle path**: each route registered
-**twice** (one with `{locale}`, one without).
+solved this with **static per-locale routes** (one copy per locale).
+This package takes the **middle path** - see
+[How the routes are registered](#how-the-routes-are-registered).
 
 ## Why not a v3 of mcamara/laravel-localization?
 
