@@ -110,6 +110,7 @@ export const route = (name, params, absolute, config) => {
 ```
 
 Furthermore, if you are using [Ziggy route groups](https://github.com/tighten/ziggy#filtering-with-groups), you’ll need to prefix localized routes by `*.` in Ziggy’s config file, otherwise they won’t be included since they are now prefixed by `with_locale` or `without_locale` by `laravel-localizer`:
+
 ```php
 <?php
 
