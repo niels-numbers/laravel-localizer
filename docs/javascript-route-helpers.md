@@ -80,6 +80,55 @@ route('about');                   // '/about'
 > calls `App::setLocale($locale)` before invoking the generator, once
 > per locale you want to ship.
 
+Please note that locale autofilling is not working if `route` is called from a non-translated URL. For example, if your admin panel routes are not registered with `Route::translate` nor `Route::group`, calling `route('about')` from `/admin` will not autofill the locale. You can workaround such a behaviour by overriding Ziggy `route` to add a default `locale`:
+
+```js
+import { route as ziggyRoute } from 'ziggy-js'
+
+const routes = ziggyRoute()._config.routes
+
+/*
+ * @todo Dear reader of this doc, change this so it matches your context.
+ *
+ * This is an example assuming the following Blade HTML exists for `/admin`:
+ * `<html lang="en" data-user-locale={{ session('locale') ?? App::getLocale() }}`>
+ */
+const userLocale = document.documentElement.dataset.userLocale
+
+export const route = (name, params, absolute, config) => {
+  const routeConfig = routes[name]
+
+  const requiredParams = new Set(routeConfig?.parameters ?? [])
+
+  if (requiredParams.has('locale')) {
+    params ??= {}
+    params.locale = userLocale
+  }
+
+  return ziggyRoute(name, params, absolute, config)
+}
+```
+
+Furthermore, if you are using [Ziggy route groups](https://github.com/tighten/ziggy#filtering-with-groups), you’ll need to prefix localized routes by `*.` in Ziggy’s config file, otherwise they won’t be included since they are now prefixed by `with_locale` or `without_locale` by `laravel-localizer`:
+```php
+<?php
+
+// config/ziggy.php
+
+return [
+    // https://github.com/tighten/ziggy#disabling-the-route-helper
+    'skip-route-function' => true,
+
+    // https://github.com/tighten/ziggy#filtering-with-groups
+    'groups' => [
+        'my-group-name' => [
+            '*.about', // before: 'about'
+            '*.contact', // before: 'contact'
+        ],
+    ],
+];
+```
+
 ## Wayfinder: `localizedRoute()` helper
 
 Wayfinder generates typed functions at build time and doesn't read
