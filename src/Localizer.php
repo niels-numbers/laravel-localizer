@@ -23,7 +23,7 @@ class Localizer
     /**
      * Runtime override for the default locale (the one whose URLs are
      * unprefixed when `hide_default_locale` is on). `null` means: fall
-     * back to `config('app.fallback_locale')`.
+     * back to configDefaultLocale().
      */
     protected ?string $activeDefaultLocale = null;
 
@@ -123,8 +123,17 @@ class Localizer
     }
 
     /**
+     * Default locale from config: `localizer.default_locale`, or
+     * `app.fallback_locale` if not set. Ignores setActiveDefaultLocale().
+     */
+    public function configDefaultLocale(): string
+    {
+        return Config::get('localizer.default_locale') ?? Config::get('app.fallback_locale');
+    }
+
+    /**
      * The default locale for the current request. Defaults to
-     * `config('app.fallback_locale')`; can be overridden at runtime via
+     * configDefaultLocale(); can be overridden at runtime via
      * `setActiveDefaultLocale()` (e.g. per tenant in a multi-tenant app).
      *
      * Drives the unprefixed URL variant when `hide_default_locale` is on,
@@ -132,12 +141,12 @@ class Localizer
      */
     public function defaultLocale(): string
     {
-        return $this->activeDefaultLocale ?? Config::get('app.fallback_locale');
+        return $this->activeDefaultLocale ?? $this->configDefaultLocale();
     }
 
     /**
      * Override the default locale for the current request. Pass `null` to
-     * reset to `config('app.fallback_locale')` — important in long-running
+     * reset to configDefaultLocale() - important in long-running
      * workers (Octane, queue) where the Localizer singleton survives the
      * request.
      *

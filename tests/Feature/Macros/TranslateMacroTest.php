@@ -28,6 +28,7 @@ class TranslateMacroTest extends TestCase
 
         Localizer::shouldReceive('supportedLocales')->andReturn(['en', 'de']);
         Localizer::shouldReceive('hideDefaultLocale')->andReturn(true);
+        Localizer::shouldReceive('configDefaultLocale')->andReturn('en');
     }
 
     public function test_registers_routes_for_each_locale()

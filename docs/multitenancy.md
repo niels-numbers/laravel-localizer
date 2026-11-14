@@ -9,8 +9,8 @@ Three concepts:
   current request. Defaults to supported. Narrow via
   `Localizer::setActiveLocales([...])`.
 - **Default locale** (runtime): which locale is unprefixed when
-  `hide_default_locale` is on. Defaults to
-  `config('app.fallback_locale')`. Override per request via
+  `hide_default_locale` is on. Defaults to `localizer.default_locale`
+  (or `app.fallback_locale` if not set). Override per request via
   `Localizer::setActiveDefaultLocale(...)`.
 
 Use case: each tenant exposes a different subset of the globally
@@ -103,8 +103,8 @@ request time by every consumer that needs it.
 Timing: routes register at **boot**, your `TenantLocales` middleware
 runs at **request time**. Boot first, middleware second - so when
 `TranslateMacro::register()` decides which locale gets the unprefixed
-variant, no override exists yet, and it falls back to
-`config('app.fallback_locale')`.
+variant, no override exists yet, and it falls back to the config
+default (`localizer.default_locale` or `app.fallback_locale`).
 
 ```
 1. BOOT (once per worker)
@@ -136,5 +136,5 @@ to pick between them - see `TranslateMacro` for a starting point.
 | `Localizer::isSupported($locale)` | Membership in supported. |
 | `Localizer::isActive($locale)` | Membership in active. |
 | `Localizer::setActiveLocales($array\|null)` | Narrow (or reset with `null`). |
-| `Localizer::defaultLocale()` | Runtime default; defaults to `app.fallback_locale`. |
+| `Localizer::defaultLocale()` | Runtime default; defaults to `localizer.default_locale`, then `app.fallback_locale`. |
 | `Localizer::setActiveDefaultLocale($string\|null)` | Override (or reset with `null`). |

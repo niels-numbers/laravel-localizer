@@ -38,8 +38,8 @@ raises `RouteNotFoundException` at request time.
 
 ## `app.locale` vs `app.fallback_locale`
 
-- `config('app.fallback_locale')`: package's default locale + Laravel
-  translation fallback. Set in `config/app.php`.
+- `config('app.fallback_locale')`: Laravel translation fallback, and
+  the package's default locale unless `localizer.default_locale` is set.
 - `config('app.locale')`: overridden at runtime by `SetLocale` via
   `App::setLocale()` - but only inside `Route::localize()` /
   `Route::translate()`. For plain unlocalized routes, console commands

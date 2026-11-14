@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace NielsNumbers\LaravelLocalizer\Macros;
 
 use Closure;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\Localizable;
 use NielsNumbers\LaravelLocalizer\Facades\Localizer;
 use NielsNumbers\LaravelLocalizer\Routing\Concerns\RegistersLocaleRouteGroups;
@@ -41,10 +40,9 @@ class TranslateMacro
         $supported = Localizer::supportedLocales();
         // Boot-time decision: which locale gets the without_locale.* variant
         // is baked into the route registration and can't change per request.
-        // Read Config directly (not Localizer::defaultLocale()) to make it
-        // explicit that any per-request setActiveDefaultLocale() override is
-        // intentionally ignored here — see docs/multitenancy.md.
-        $default = Config::get('app.fallback_locale');
+        // Uses configDefaultLocale() (not defaultLocale()) so a per-request
+        // setActiveDefaultLocale() override is ignored - see docs/multitenancy.md.
+        $default = Localizer::configDefaultLocale();
         $hide = Localizer::hideDefaultLocale();
 
         foreach ($supported as $locale) {

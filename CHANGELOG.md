@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `localizer.default_locale` config option: sets the site's default locale independently of `app.fallback_locale`, so e.g. a Persian site can fall back to English for missing translations. `null` (default) keeps using `app.fallback_locale`. Also `Localizer::configDefaultLocale()`, the config-based default without the `setActiveDefaultLocale()` override.
+
 ## [1.4.2] - 2026-11-03
 
 ### Fixed

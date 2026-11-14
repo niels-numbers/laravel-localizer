@@ -6,12 +6,12 @@ automatically redirects between localized and non-localized URLs.
 ## Behavior
 
 1. If `hide_default_locale` is `true` and the current locale is the
-   **fallback_locale**, requests to `/en/about` will redirect to `/about`.
+   **default locale**, requests to `/en/about` will redirect to `/about`.
 
    This prevents SEO duplicate content (both `/about` and `/en/about`
    pointing to the same page).
 
-2. If the current locale is **not** the fallback_locale and the route
+2. If the current locale is **not** the default locale and the route
    has **no locale prefix**, the request will be redirected to the
    localized version. For example, if the user's session locale is `de`
    and they open `/about`, it will redirect to `/de/about`.

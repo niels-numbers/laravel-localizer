@@ -21,6 +21,10 @@ Make sure your default is set in `config/app.php`:
 'fallback_locale' => 'en',
 ```
 
+To use a different default than the translation fallback, set
+`default_locale` in `config/localizer.php` (see
+[Configuration](/configuration#default-locale)).
+
 Publish the package config:
 
 ```bash

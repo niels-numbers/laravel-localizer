@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array<int, string> activeLocales()
  * @method static bool isActive(?string $locale)
  * @method static void setActiveLocales(?array<int, string> $locales)
+ * @method static string configDefaultLocale()
  * @method static string defaultLocale()
  * @method static void setActiveDefaultLocale(?string $locale)
  * @method static bool hideDefaultLocale()
