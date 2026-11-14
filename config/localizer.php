@@ -8,9 +8,6 @@ use NielsNumbers\LaravelLocalizer\Detectors\UserDetector;
 return [
     'supported_locales' => [], // ['de', 'en', .. ]
 
-    // Default locale of the site. `null` uses `app.fallback_locale`.
-    'default_locale' => null,
-
     'hide_default_locale' => true,
 
     'redirect_enabled' => true,

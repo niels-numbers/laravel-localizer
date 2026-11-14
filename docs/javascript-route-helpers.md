@@ -92,7 +92,7 @@ wraps the generated modules and mirrors the server-side variant pick:
 import * as withLocale    from '@/routes/with_locale';
 import * as withoutLocale from '@/routes/without_locale';
 
-const DEFAULT_LOCALE = 'en';   // mirror config('app.fallback_locale')
+const DEFAULT_LOCALE = 'en';   // mirror config('app.locale')
 const HIDE_DEFAULT   = true;   // mirror localizer.hide_default_locale
 
 // Use whatever locale source you have. With Inertia, share it from the

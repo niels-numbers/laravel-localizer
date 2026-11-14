@@ -15,7 +15,7 @@ use Orchestra\Testbench\TestCase;
 
 /**
  * Documents the runtime default-locale override (multitenancy use case):
- * `defaultLocale()` defaults to `config('app.fallback_locale')` and can
+ * `defaultLocale()` defaults to `app.locale` (read at boot) and can
  * be overridden per request via `setActiveDefaultLocale()` — useful when
  * different tenants/domains share one process but have different default
  * languages, and `hide_default_locale` should follow the *tenant's*
@@ -47,7 +47,7 @@ class ActiveDefaultLocaleTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_default_locale_falls_back_to_app_fallback_locale()
+    public function test_default_locale_falls_back_to_app_locale()
     {
         $this->assertSame('en', app(Localizer::class)->defaultLocale());
     }
@@ -58,9 +58,8 @@ class ActiveDefaultLocaleTest extends TestCase
         $localizer->setActiveDefaultLocale('de');
 
         $this->assertSame('de', $localizer->defaultLocale());
-        // Underlying config is untouched — no leak into Laravel's
-        // translation fallback or other consumers.
-        $this->assertSame('en', Config::get('app.fallback_locale'));
+        // Underlying config is untouched.
+        $this->assertSame('en', Config::get('app.locale'));
     }
 
     public function test_set_active_default_locale_null_resets_to_config()
@@ -138,7 +137,7 @@ class ActiveDefaultLocaleTest extends TestCase
     {
         // No URL/session/cookie/detector signal → SetLocale falls back to
         // the package's default. With the override in place, that's the
-        // tenant default, not config('app.fallback_locale').
+        // tenant default, not the config default.
         app(Localizer::class)->setActiveDefaultLocale('de');
 
         Route::group(['middleware' => SetLocale::class, 'locale_type' => 'with_locale'], function () {

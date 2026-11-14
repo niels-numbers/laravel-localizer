@@ -27,9 +27,13 @@ class Localizer
      */
     protected ?string $activeDefaultLocale = null;
 
+    /**
+     * @param  string  $configDefaultLocale  `app.locale` as configured, read at boot
+     */
     public function __construct(
         protected UriTranslator $translator,
         protected LocaleDirection $direction,
+        protected string $configDefaultLocale,
     ) {}
 
     /**
@@ -123,12 +127,13 @@ class Localizer
     }
 
     /**
-     * Default locale from config: `localizer.default_locale`, or
-     * `app.fallback_locale` if not set. Ignores setActiveDefaultLocale().
+     * Default locale from config: `app.locale` as it was at boot, before
+     * SetLocale replaced it with the request's locale. Ignores
+     * setActiveDefaultLocale().
      */
     public function configDefaultLocale(): string
     {
-        return Config::get('localizer.default_locale') ?? Config::get('app.fallback_locale');
+        return $this->configDefaultLocale;
     }
 
     /**

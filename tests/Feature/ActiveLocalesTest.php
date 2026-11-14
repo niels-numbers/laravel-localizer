@@ -97,7 +97,7 @@ class ActiveLocalesTest extends TestCase
         $response = $this->get('/fr/about');
 
         // fr is NOT in active set → SetLocale ignores it and falls back
-        // to app.fallback_locale (en).
+        // to the default locale (en).
         $response->assertOk();
         $this->assertSame('en', App::getLocale());
     }

@@ -9,8 +9,8 @@ Three concepts:
   current request. Defaults to supported. Narrow via
   `Localizer::setActiveLocales([...])`.
 - **Default locale** (runtime): which locale is unprefixed when
-  `hide_default_locale` is on. Defaults to `localizer.default_locale`
-  (or `app.fallback_locale` if not set). Override per request via
+  `hide_default_locale` is on. Defaults to `app.locale` (read at
+  boot). Override per request via
   `Localizer::setActiveDefaultLocale(...)`.
 
 Use case: each tenant exposes a different subset of the globally
@@ -66,17 +66,15 @@ narrowed subset and the tenant default:
 })
 ```
 
-## Why not `Config::set('app.fallback_locale', ...)`?
+## Why not `Config::set('app.locale', ...)`?
 
-Three problems:
+Two problems:
 
-1. **Overloaded.** `fallback_locale` is also Laravel's translation
-   fallback. Mutating it per tenant changes translation behavior, not
-   just URL behavior.
+1. **Read at boot.** The package reads `app.locale` once at boot, so
+   mid-request changes don't reach it. `SetLocale` also overwrites it
+   on every request.
 2. **Octane leaks.** The `Config` repository survives across requests.
    Without a reset hook, Tenant A's value bleeds into Tenant B.
-3. **Boot-time consumers.** Some package internals read config at
-   boot. Mid-request mutations don't reach them.
 
 `setActiveDefaultLocale()` lives on the Localizer singleton
 (request-scoped), doesn't touch translation config, and is read at
@@ -104,11 +102,11 @@ Timing: routes register at **boot**, your `TenantLocales` middleware
 runs at **request time**. Boot first, middleware second - so when
 `TranslateMacro::register()` decides which locale gets the unprefixed
 variant, no override exists yet, and it falls back to the config
-default (`localizer.default_locale` or `app.fallback_locale`).
+default (`app.locale`).
 
 ```
 1. BOOT (once per worker)
-   Route::translate(...) -> reads config('app.fallback_locale') = 'en'
+   Route::translate(...) -> reads config('app.locale') = 'en'
    registers:
      translated_en.about  -> /en/about
      translated_de.about  -> /de/ueber
@@ -136,5 +134,5 @@ to pick between them - see `TranslateMacro` for a starting point.
 | `Localizer::isSupported($locale)` | Membership in supported. |
 | `Localizer::isActive($locale)` | Membership in active. |
 | `Localizer::setActiveLocales($array\|null)` | Narrow (or reset with `null`). |
-| `Localizer::defaultLocale()` | Runtime default; defaults to `localizer.default_locale`, then `app.fallback_locale`. |
+| `Localizer::defaultLocale()` | Runtime default; defaults to `app.locale` (read at boot). |
 | `Localizer::setActiveDefaultLocale($string\|null)` | Override (or reset with `null`). |

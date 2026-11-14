@@ -9,7 +9,7 @@
 3. **Session** - locale from a previous request.
 4. **Cookie** - persisted client-side.
 5. **Detectors** - see below.
-6. **Default locale** - `localizer.default_locale`, or `app.fallback_locale` if not set.
+6. **Default locale** - `app.locale` from `config/app.php`.
 
 Only **URL** and **route action** override an existing session/cookie.
 Without a URL signal (request came in as `/about`, not `/de/about`),

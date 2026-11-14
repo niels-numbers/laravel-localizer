@@ -13,10 +13,10 @@ use NielsNumbers\LaravelLocalizer\ServiceProvider;
 use Orchestra\Testbench\TestCase;
 
 /**
- * `localizer.default_locale` sets the site's default locale independently
- * of `app.fallback_locale` (Laravel's translation fallback).
+ * The default locale is `app.locale` as configured, independent of
+ * `app.fallback_locale` (Laravel's translation fallback).
  */
-class DefaultLocaleConfigTest extends TestCase
+class AppLocaleDefaultTest extends TestCase
 {
     protected function getPackageProviders($app)
     {
@@ -27,7 +27,6 @@ class DefaultLocaleConfigTest extends TestCase
     {
         Config::set('app.locale', 'fa');
         Config::set('app.fallback_locale', 'en');
-        Config::set('localizer.default_locale', 'fa');
         Config::set('localizer.supported_locales', ['fa', 'en', 'ar']);
         Config::set('localizer.hide_default_locale', true);
         Config::set('localizer.persist_locale.session', false);
@@ -35,29 +34,16 @@ class DefaultLocaleConfigTest extends TestCase
         Config::set('localizer.detectors', []);
     }
 
-    protected function tearDown(): void
-    {
-        app(Localizer::class)->setActiveDefaultLocale(null);
-        parent::tearDown();
-    }
-
-    public function test_default_locale_uses_config_option()
+    public function test_default_locale_is_app_locale()
     {
         $this->assertSame('fa', app(Localizer::class)->defaultLocale());
     }
 
-    public function test_falls_back_to_app_fallback_locale_when_null()
+    public function test_default_locale_survives_set_locale()
     {
-        Config::set('localizer.default_locale', null);
+        App::setLocale('ar');
 
-        $this->assertSame('en', app(Localizer::class)->defaultLocale());
-    }
-
-    public function test_active_default_locale_overrides_config_option()
-    {
-        app(Localizer::class)->setActiveDefaultLocale('ar');
-
-        $this->assertSame('ar', app(Localizer::class)->defaultLocale());
+        $this->assertSame('fa', app(Localizer::class)->defaultLocale());
     }
 
     public function test_unprefixed_url_serves_default_locale()
@@ -68,6 +54,9 @@ class DefaultLocaleConfigTest extends TestCase
             });
         });
 
+        $this->get('/about')->assertSeeText('fa');
+        $this->get('/ar/about')->assertSeeText('ar');
+        // Default unchanged after a request in another locale.
         $this->get('/about')->assertSeeText('fa');
     }
 
