@@ -173,6 +173,31 @@ Route::translate(function () {
 The translation file shape is unchanged - keep `lang/{locale}/routes.php`
 as it is.
 
+Note that `Route::group()` is the only method after which you can chain `->localize()` or `->translate()`:
+
+```php
+// Before
+Route::domain('example.tld')
+    ->prefix(LaravelLocalization::setLocale())
+    ->middleware(['localeSessionRedirect', 'localizationRedirect'])
+    ->group(function () {
+        Route::get('/about', AboutController::class)->name('about');
+    });
+});
+
+// After
+Route::domain('example.tld')->group(function () {
+    Route::localize(function () {
+        Route::get('/about', AboutController::class)->name('about');
+    });
+});
+
+// Removing `->group()` doesn’t work:
+Route::domain('example.tld')->localize(function () {
+    Route::get('/about', AboutController::class)->name('about');
+});
+```
+
 ## 4. Replace URL helpers with named routes
 
 The supported path is **named routes + `route()`**. The URL generator
@@ -184,12 +209,14 @@ locale explicitly.
 LaravelLocalization::localizeUrl('/users');
 LaravelLocalization::getURLFromRouteNameTranslated($locale, 'routes.users');
 LaravelLocalization::getLocalizedURL($locale);   // current page in another locale
+Route::currentRouteName();
 
 // After
 route('users');                       // current locale
 route('users', ['locale' => 'fr']);   // explicit override
 Route::localizedUrl('fr');            // current page in another locale (canonical, for hreflang)
 Route::localizedSwitcherUrl('fr');    // switcher link (always prefixed)
+Route::currentBaseName();             // current route name
 ```
 
 There is no direct replacement for `localizeUrl('/users')` (path-based
@@ -280,7 +307,11 @@ URL generator, which is unaffected by the route cache. Same for
   `translated_de.about` etc.) appear as separate rows. There is no
   per-locale filter - pipe through `grep` if you need one.
 
-## 7. Update Ziggy / JS route helpers
+## 7. Testing
+
+If your tests incorporated the [changes needed by `laravel-localization` for tests to pass](https://github.com/mcamara/laravel-localization#testing), you can revert them: they are not needed for `laravel-localizer`.
+
+## 8. Update Ziggy / JS route helpers
 
 If your app uses Ziggy (or Inertia with Ziggy underneath), the
 server-side variant selection that `route()` does in PHP does **not**
