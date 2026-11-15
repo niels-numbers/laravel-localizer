@@ -18,12 +18,11 @@ The service provider auto-registers. Three steps to finish setup.
 Make sure your default is set in `config/app.php`:
 
 ```php
-'fallback_locale' => 'en',
+'locale' => 'en',
 ```
 
-To use a different default than the translation fallback, set
-`default_locale` in `config/localizer.php` (see
-[Configuration](/configuration#default-locale)).
+See [Configuration](/configuration#default-locale) for how this differs
+from `fallback_locale`.
 
 Publish the package config:
 

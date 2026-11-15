@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static ?string baseName(?string $name)
  * @method static string localeDirection(string $locale)
  * @method static string currentLocaleDirection()
+ * @method static string macroRegisterName()
  */
 class Localizer extends Facade
 {

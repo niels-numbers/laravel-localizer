@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
+use NielsNumbers\LaravelLocalizer\Localizer;
 use NielsNumbers\LaravelLocalizer\Middleware\RedirectLocale;
 use NielsNumbers\LaravelLocalizer\Middleware\SetLocale;
 use NielsNumbers\LaravelLocalizer\ServiceProvider;
@@ -123,7 +124,7 @@ class RedirectLocaleTest extends TestCase
     public function test_handles_multi_character_locale_prefix()
     {
         App::setLocale('pt-BR');
-        Config::set('app.fallback_locale', 'pt-BR');
+        app(Localizer::class)->setActiveDefaultLocale('pt-BR');
         Config::set('localizer.hide_default_locale', true);
 
         $response = $this->get('/pt-BR/about');

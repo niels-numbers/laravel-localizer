@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** the default locale is now `app.locale` (read once at boot) instead of `app.fallback_locale`. `fallback_locale` is only Laravel's translation fallback again, so e.g. `locale => 'de'` with `fallback_locale => 'en'` works as expected. Same as `mcamara/laravel-localization`. **Upgrade:** if your `locale` and `fallback_locale` differ, set `locale` to the locale whose URLs should be unprefixed.
+
+### Removed
+
+- **Breaking:** the `localizer.default_locale` config option from 1.5.0. Use `app.locale` instead.
+
 ## [1.5.0] - 2026-11-14
 
 ### Added

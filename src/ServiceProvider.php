@@ -26,11 +26,19 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
         ], 'config');
 
         $this->registerMacros();
+
+        // Resolve now so the Localizer reads app.locale before
+        // App::setLocale() overwrites it on the first request.
+        $this->app->make(Localizer::class);
     }
 
     public function register(): void
     {
-        $this->app->singleton(Localizer::class, fn () => new Localizer(new UriTranslator, new LocaleDirection));
+        $this->app->singleton(Localizer::class, fn ($app) => new Localizer(
+            new UriTranslator,
+            new LocaleDirection,
+            $app['config']->get('app.locale', 'en'),
+        ));
         $this->mergeConfigFrom(__DIR__.'/../config/localizer.php', 'localizer');
 
         $this->registerUrlGenerator();

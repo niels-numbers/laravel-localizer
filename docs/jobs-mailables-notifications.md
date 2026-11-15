@@ -3,7 +3,7 @@
 The `SetLocale` middleware only runs during HTTP requests. Anywhere
 else (queued jobs, mailables, notifications, console commands), the
 application's locale is whatever the worker process has set globally,
-typically your `fallback_locale`.
+typically `app.locale` from `config/app.php`.
 
 This affects **everything that reads `App::getLocale()`**, not just URLs:
 

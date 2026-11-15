@@ -211,7 +211,7 @@ The old `config/laravellocalization.php` maps to the new
 | `localeSessionRedirect` middleware | `persist_locale.session` | Moved from middleware to config (see step 2). |
 | - | `persist_locale.cookie` | New: cookie persistence. On by default. |
 | `localesOrder`, `localesMapping` | - | Not supported. Use a custom detector if you need locale aliasing. |
-| `defaultLocale` | `config('app.fallback_locale')` in `config/app.php` | This package reads the framework's fallback locale; don't redefine it here. |
+| `defaultLocale` | `config('app.locale')` in `config/app.php` | Same as laravel-localization. |
 
 Publish the new config and port your values:
 
