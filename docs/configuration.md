@@ -30,9 +30,9 @@ Three locale settings play a role, and they mean different things:
   fallback. If a string is missing in the current locale, Laravel uses
   the fallback locale's string instead. It has no effect on URLs.
 - **Current locale** (`App::getLocale()`): the locale of the current
-  request. `SetLocale` sets it on every request via `App::setLocale()`.
-  The package reads `app.locale` once at boot, so this doesn't change
-  the default.
+  request. `SetLocale` sets it on every request via `App::setLocale()`,
+  which also overwrites `config('app.locale')`. The package keeps the
+  default it read at boot, so this doesn't affect the default locale.
 
 Example: the site's main language is `de`, but missing translations
 should fall back to `en`:
