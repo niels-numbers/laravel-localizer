@@ -20,9 +20,10 @@ rewrite fixes at the design level:
 - **Translated routes switch reliably.** The original built
   locale-switched URLs by parsing the current request URI as a string
   and reverse-mapping it to a lang key. That approach produced a long
-  tail of edge-case bugs - dynamic slugs containing `/`, optional
-  segments, query strings, encoding
-  ([#928](https://github.com/mcamara/laravel-localization/issues/928),
+  tail of edge-case bugs - route parameters, dynamic slugs containing
+  `/`, optional segments, query strings, encoding
+  ([#821](https://github.com/mcamara/laravel-localization/issues/821),
+  [#928](https://github.com/mcamara/laravel-localization/issues/928),
   [#933](https://github.com/mcamara/laravel-localization/issues/933),
   [#924](https://github.com/mcamara/laravel-localization/issues/924),
   [#885](https://github.com/mcamara/laravel-localization/issues/885)).
